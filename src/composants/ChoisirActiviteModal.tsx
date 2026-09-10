@@ -47,7 +47,7 @@ export function ChoisirActiviteModal({ surChoix, surFermeture }: Props) {
 
         {activites.length === 0 ? (
           <p style={{ margin: 0, color: 'var(--texte-secondaire)' }}>
-            Aucune activité. Aller d'abord dans « Bibliothèque d'activités » pour en créer.
+            Aucune autre activité pour l'instant. Créer plutôt une nouvelle activité.
           </p>
         ) : (
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, overflowY: 'auto' }} className="pile">

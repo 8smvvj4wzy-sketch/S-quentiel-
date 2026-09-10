@@ -78,7 +78,7 @@ export function Bibliotheque() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/educateur" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to="/parametrage" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
         <h1 className="barre__titre">Bibliothèque de pictos</h1>

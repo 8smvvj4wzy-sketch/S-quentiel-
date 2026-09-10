@@ -39,7 +39,7 @@ function VignettePictoPage({ id, surRetrait }: { id: string; surRetrait: () => v
 
 /** Contenu d'une page TLA : ajouter, retirer, réordonner des pictos. */
 export function EditeurPageTLA() {
-  const { pageId } = useParams<{ pageId: string }>()
+  const { profilId, pageId } = useParams<{ profilId: string; pageId: string }>()
   const [page, setPage] = useState<PageTLA | null | undefined>(undefined)
   const [nom, setNom] = useState('')
   const [choixOuvert, setChoixOuvert] = useState(false)
@@ -65,7 +65,7 @@ export function EditeurPageTLA() {
     return (
       <div className="ecran contenu vide">
         <p>Page introuvable.</p>
-        <Link to="/educateur/tla" className="bouton">
+        <Link to={`/profil/${profilId}/tla/pages`} className="bouton">
           Retour
         </Link>
       </div>
@@ -75,7 +75,7 @@ export function EditeurPageTLA() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/educateur/tla" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to={`/profil/${profilId}/tla/pages`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
         <h1 className="barre__titre">{page.nom}</h1>

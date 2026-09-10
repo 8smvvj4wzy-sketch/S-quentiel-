@@ -120,8 +120,14 @@ toilettes ».
 ## 4. Écrans
 
 ### 4.1 Accueil
-Liste des profils (initiales, grande vignette). Un appui ouvre l'EDT du jour du profil.
-Bouton discret en bas pour l'espace éducateur.
+Liste des profils (initiales, grande vignette). Un appui ouvre l'accueil du profil : quatre
+grandes tuiles (emploi du temps, séquentiels, règles, pour parler). Bouton discret en bas
+pour le paramétrage.
+
+> **Écart avec la version initiale (lot 8).** L'accueil d'un profil n'ouvrait à l'origine
+> que l'EDT du jour. Le premier usage réel a montré que chaque support (séquentiels,
+> règles, TLA) doit pouvoir être ouvert et préparé indépendamment, sans détour par
+> l'emploi du temps — d'où les quatre tuiles.
 
 ### 4.2 Emploi du temps (mode jeune)
 Suite verticale ou horizontale de créneaux, un gros picto par activité, nom en dessous.
@@ -129,14 +135,23 @@ Suite verticale ou horizontale de créneaux, un gros picto par activité, nom en
 Un appui sur le créneau en cours ouvre son séquentiel. Un appui sur un autre créneau
 l'ouvre aussi — c'est l'éducateur qui pilote, pas l'app.
 Si l'activité n'a pas de séquence, l'appui ouvre une vue plein écran du picto seul.
+Un bouton « Modifier » en barre haute ouvre l'édition de l'EDT du jour, où un créneau se
+crée en un seul geste (nom, picto, séquence facultative, heure facultative) — voir §4.6.
 
 ### 4.3 Séquentiel
 Étapes en liste, chacune avec picto et/ou texte. Un appui coche l'étape : coche verte,
-étape suivante mise en avant. Un appui sur une étape cochée **ne la décoche pas** en
-mode jeune (voir verrouillage). Quand toutes les étapes sont faites : écran « Fini » et
-retour à l'EDT.
+étape suivante mise en avant. Quand toutes les étapes sont faites : écran « Fini » et
+retour à l'accueil du profil.
 Option par séquence : affichage « une étape à la fois » (plein écran) pour les jeunes
 qui se perdent dans la liste.
+Un bouton « Modifier » bascule la vue en édition en place (ajouter, modifier, supprimer,
+réordonner des étapes), sans quitter le séquentiel en cours. Un séquentiel se lance aussi
+seul, depuis l'écran Séquentiels, sans passer par l'emploi du temps.
+
+> **Écart avec la version initiale (lot 8).** Décocher une étape et modifier une séquence
+> en cours étaient interdits en mode jeune (voir §5). Le terrain a montré l'inverse : un
+> éducateur qui se trompe ou qui réadapte une activité en cours d'atelier doit pouvoir
+> corriger tout de suite, sans sortir vers un espace protégé.
 
 ### 4.4 Règles
 Affichage plein écran d'une règle, ou bandeau permanent en haut de l'EDT pour les
@@ -155,29 +170,45 @@ Grille configurable de 3×2 à 8×6. Structure :
 Le TLA s'ouvre par un **bouton flottant présent sur tous les écrans**, y compris
 pendant un séquentiel. Il se referme sans perdre l'état de l'écran en dessous.
 
-### 4.6 Espace éducateur
-Accessible par appui long de 3 secondes sur le coin haut-droit, puis code PIN à
-4 chiffres (défini au premier lancement, modifiable dans les réglages).
-Contient :
+### 4.6 Paramétrage
+Accessible par un bouton « Paramétrage » discret sur l'accueil et sur l'accueil de
+profil, puis code PIN à 4 chiffres (défini au premier lancement, modifiable dans les
+réglages). Contient ce qui se règle une fois, pas ce qui se prépare au quotidien :
 - Gestion des profils
 - Bibliothèque de pictos (recherche, import photo, générateur composite)
-- Bibliothèque de séquences (créer, dupliquer, réordonner par glisser-déposer)
-- Bibliothèque d'activités et de règles
-- Construction de l'EDT par profil et par jour de semaine
-- Configuration du TLA par profil (taille de grille, pages, contenu)
 - Réglages vocaux par profil, **avec bouton de test de voix**
 - Remise à zéro des cochages (un profil, un jour, ou tout) et annulation d'un cochage
 - Export / import de la configuration complète en fichier JSON, pour dupliquer le
   paramétrage d'une tablette à l'autre sans tout ressaisir
+- À propos (attribution ARASAAC)
+
+Tout le reste — séquences, activités, règles, construction de l'EDT, configuration du
+TLA — est passé dans les quatre écrans du profil (§4.1) : chaque écran gère son propre
+contenu (créer, modifier, supprimer, lancer), en édition libre, sans PIN.
+
+> **Écart avec la version initiale (lot 8).** L'espace éducateur regroupait à l'origine
+> tout ce qui n'était pas la vue jeune du jour : profils, pictos, séquences, activités,
+> règles, EDT, TLA — douze écrans derrière un appui long caché de 3 secondes. Le premier
+> usage réel a montré que cet arbre convenait à une préparation ponctuelle mais pas à une
+> réadaptation en direct pendant un atelier (ajouter une étape, corriger un créneau,
+> décocher une erreur). Seul ce qui se règle une fois par tablette — profils, pictos,
+> voix, export/import — reste protégé ; le reste est en édition libre à même les quatre
+> écrans du profil.
 
 ## 5. Verrouillage
 
-Mode jeune par défaut au démarrage. En mode jeune : impossible de décocher, de sortir
-d'un profil, de modifier quoi que ce soit. Toute action destructive ou d'édition passe
-par l'espace éducateur.
-Le passage en mode éducateur est volontairement peu découvrable (appui long 3 s + PIN)
-mais rapide pour un adulte prévenu. Retour automatique en mode jeune après 5 minutes
-sans interaction dans l'espace éducateur.
+Mode jeune par défaut au démarrage. Le passage en mode paramétrage est volontairement
+peu découvrable (bouton discret + PIN) mais rapide pour un adulte prévenu. Retour
+automatique en mode jeune après 5 minutes sans interaction dans le paramétrage.
+
+> **Écart avec la version initiale (lot 8).** À l'origine, le mode jeune interdisait tout
+> décochage et toute modification, et le passage en mode éducateur se faisait par un
+> appui long de 3 secondes caché dans un coin d'écran. Le terrain a montré le contraire :
+> un jeune ou un éducateur doit pouvoir corriger une étape cochée par erreur ou ajouter un
+> créneau sans quitter l'écran en cours, et l'appui long caché ralentissait un geste qui
+> doit être immédiat pendant un atelier. Le PIN protège désormais uniquement le
+> paramétrage (§4.6) — profils, pictos, voix, export/import — pas l'usage quotidien des
+> quatre écrans du profil, où l'édition est libre.
 
 ## 6. Synthèse vocale
 

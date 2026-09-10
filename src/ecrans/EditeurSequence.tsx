@@ -3,14 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ajouterEtape,
   definirUneEtapeALaFois,
-  listerProfils,
   modifierEtape,
   renommerSequence,
   reordonnerEtapes,
   sequence as chargerSequence,
   supprimerEtape,
 } from '../db'
-import type { Etape, Picto, Profil, Sequence } from '../types'
+import type { Etape, Picto, Sequence } from '../types'
 import { picto as chargerPicto } from '../db'
 import { EtapeFormModal } from '../composants/EtapeFormModal'
 import { useGlisserDeposer } from '../lib/useGlisserDeposer'
@@ -37,12 +36,10 @@ function LigneEtape({ etape, poignee }: { etape: Etape; poignee: object }) {
 
 /** Éditeur d'étapes : picto et/ou texte, réordonnancement (ROADMAP lot 2). */
 export function EditeurSequence() {
-  const { sequenceId } = useParams<{ sequenceId: string }>()
+  const { profilId, sequenceId } = useParams<{ profilId: string; sequenceId: string }>()
   const [seq, setSeq] = useState<Sequence | null | undefined>(undefined)
   const [nom, setNom] = useState('')
   const [modalEtape, setModalEtape] = useState<'nouvelle' | Etape | null>(null)
-  const [previsualiser, setPrevisualiser] = useState(false)
-  const [profils, setProfils] = useState<Profil[]>([])
   const naviguer = useNavigate()
 
   const recharger = useCallback(async () => {
@@ -56,10 +53,6 @@ export function EditeurSequence() {
     void recharger()
   }, [recharger])
 
-  useEffect(() => {
-    void listerProfils().then(setProfils)
-  }, [])
-
   const { liste, poignee } = useGlisserDeposer(seq?.etapes ?? [], (ordre) => {
     if (sequenceId) void reordonnerEtapes(sequenceId, ordre).then(recharger)
   })
@@ -70,8 +63,8 @@ export function EditeurSequence() {
       <div className="ecran">
         <div className="contenu vide">
           <p>Séquence introuvable.</p>
-          <Link to="/educateur/sequences" className="bouton">
-            Retour à la bibliothèque
+          <Link to={`/profil/${profilId}/sequentiels`} className="bouton">
+            Retour aux séquentiels
           </Link>
         </div>
       </div>
@@ -92,7 +85,7 @@ export function EditeurSequence() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/educateur/sequences" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to={`/profil/${profilId}/sequentiels`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
         <h1 className="barre__titre">{seq.nom}</h1>
@@ -169,17 +162,12 @@ export function EditeurSequence() {
           <button
             type="button"
             className="bouton bouton--accent"
-            disabled={liste.length === 0 || profils.length === 0}
-            onClick={() => setPrevisualiser(true)}
+            disabled={liste.length === 0}
+            onClick={() => naviguer(`/profil/${profilId}/sequentiel/${sequenceId}`)}
           >
-            Prévisualiser
+            Lancer
           </button>
         </div>
-        {profils.length === 0 && (
-          <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 14 }}>
-            Créer un profil pour pouvoir prévisualiser.
-          </p>
-        )}
       </div>
 
       {modalEtape && (
@@ -190,54 +178,6 @@ export function EditeurSequence() {
         />
       )}
 
-      {previsualiser && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Choisir un profil pour prévisualiser"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            background: 'rgba(28, 28, 30, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 'calc(var(--pas) * 2)',
-          }}
-        >
-          <div
-            className="pile"
-            style={{
-              background: 'var(--surface)',
-              border: '2px solid var(--bordure-forte)',
-              borderRadius: 'var(--rayon)',
-              padding: 'calc(var(--pas) * 3)',
-              maxWidth: '24rem',
-              width: '100%',
-            }}
-          >
-            <h2 style={{ fontSize: 22 }}>Prévisualiser pour…</h2>
-            <div className="pile">
-              {profils.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className="bouton"
-                  onClick={() => naviguer(`/profil/${p.id}/sequentiel/${sequenceId}`)}
-                >
-                  {p.initiales}
-                </button>
-              ))}
-            </div>
-            <div className="ligne" style={{ justifyContent: 'flex-end' }}>
-              <button type="button" className="bouton" onClick={() => setPrevisualiser(false)}>
-                Annuler
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -12,11 +12,15 @@ import { useVerrouillage } from '../lib/verrouillage'
 import type { Profil } from '../types'
 
 /**
- * SPEC §4.6 — Espace éducateur. Gestion des profils et accès à la
- * bibliothèque de pictos ; les autres rubriques arrivent avec leurs lots
- * (ROADMAP). Registre éducateur : on parle à l'adulte.
+ * Écran Paramétrage (ROADMAP lot 8) — le seul endroit encore protégé par le
+ * code PIN. Il ne contient plus que ce qu'on règle une fois : les profils,
+ * la bibliothèque de pictos, les voix, l'export/import. Tout ce qui se
+ * prépare ou se réadapte au quotidien — emploi du temps, séquentiels,
+ * règles, TLA — est passé dans les quatre écrans du profil.
+ *
+ * Registre éducateur : on parle à l'adulte.
  */
-export function Educateur() {
+export function Parametrage() {
   const [profils, setProfils] = useState<Profil[]>([])
   const [nouveau, setNouveau] = useState('')
   const [aSupprimer, setASupprimer] = useState<Profil | null>(null)
@@ -67,7 +71,7 @@ export function Educateur() {
   return (
     <div className="ecran">
       <div className="barre">
-        <h1 className="barre__titre">Espace éducateur</h1>
+        <h1 className="barre__titre">Paramétrage</h1>
         <button type="button" className="bouton" onClick={quitter}>
           Quitter
         </button>
@@ -125,13 +129,7 @@ export function Educateur() {
                 >
                   <span style={{ fontWeight: 700 }}>{profil.initiales}</span>
                   <span className="ligne">
-                    <Link to={`/educateur/profils/${profil.id}/edt`} className="bouton" style={{ textDecoration: 'none' }}>
-                      Emploi du temps
-                    </Link>
-                    <Link to={`/educateur/profils/${profil.id}/tla`} className="bouton" style={{ textDecoration: 'none' }}>
-                      TLA
-                    </Link>
-                    <Link to={`/educateur/profils/${profil.id}/vocal`} className="bouton" style={{ textDecoration: 'none' }}>
+                    <Link to={`/parametrage/profils/${profil.id}/vocal`} className="bouton" style={{ textDecoration: 'none' }}>
                       Voix
                     </Link>
                     <button type="button" className="bouton" onClick={() => void renommer(profil)}>
@@ -156,31 +154,12 @@ export function Educateur() {
 
         <section className="pile">
           <h2 style={{ fontSize: 22 }}>Pictos</h2>
-          <Link to="/educateur/bibliotheque" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
+          <Link to="/parametrage/bibliotheque" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
             Ouvrir la bibliothèque de pictos
           </Link>
-        </section>
-
-        <section className="pile">
-          <h2 style={{ fontSize: 22 }}>Séquences et activités</h2>
-          <div className="ligne">
-            <Link to="/educateur/sequences" className="bouton" style={{ textDecoration: 'none' }}>
-              Ouvrir la bibliothèque de séquences
-            </Link>
-            <Link to="/educateur/activites" className="bouton" style={{ textDecoration: 'none' }}>
-              Ouvrir la bibliothèque d'activités
-            </Link>
-          </div>
-        </section>
-
-        <section className="pile">
-          <h2 style={{ fontSize: 22 }}>Tableau de communication (TLA)</h2>
-          <Link to="/educateur/tla" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
-            Ouvrir les pages du TLA
-          </Link>
           <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 18 }}>
-            La taille de la grille, la page noyau et les réglages vocaux se configurent par
-            profil, avec les boutons « TLA » et « Voix » ci-dessus.
+            Pour poser un picto sur une étape ou une activité, inutile de passer par ici : la
+            recherche des formulaires va directement chercher dans tout le catalogue ARASAAC.
           </p>
         </section>
 
@@ -192,21 +171,15 @@ export function Educateur() {
         </section>
 
         <section className="pile">
-          <h2 style={{ fontSize: 22 }}>Règles</h2>
-          <Link to="/educateur/regles" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
-            Ouvrir la bibliothèque de règles
-          </Link>
-          <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 18 }}>
-            Le rattachement à une activité se fait dans son formulaire ; le rattachement à la
-            journée d'un profil, dans son emploi du temps.
-          </p>
-        </section>
-
-        <section className="pile">
           <h2 style={{ fontSize: 22 }}>Configuration</h2>
-          <Link to="/educateur/export-import" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
-            Export / import de la configuration
-          </Link>
+          <div className="ligne">
+            <Link to="/parametrage/export-import" className="bouton" style={{ textDecoration: 'none' }}>
+              Export / import de la configuration
+            </Link>
+            <Link to="/a-propos" className="bouton" style={{ textDecoration: 'none' }}>
+              À propos
+            </Link>
+          </div>
         </section>
       </div>
 

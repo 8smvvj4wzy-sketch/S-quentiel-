@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { creneauEtActivite, db, listerRegles } from '../db'
 import { creneauDepuisChemin } from '../lib/contexteActivite'
-import { useVerrouillage } from '../lib/verrouillage'
 import type { Regle } from '../types'
 import { TLAOverlay } from './TLAOverlay'
 import { RegleOverlay } from './RegleOverlay'
@@ -12,12 +11,11 @@ type Panneau = 'menu' | 'choix-regle' | 'tla' | null
 /**
  * Menu flottant présent sur tous les écrans d'un profil (SPEC §4.5) : accès
  * au TLA, et déclenchement d'un rappel de règle « à tout moment » (SPEC
- * §4.4). Rendu hors de <Routes>, comme <CoinEducateur> : ouvrir un panneau
- * n'est jamais une navigation, l'écran en dessous ne perd donc aucun état.
+ * §4.4). Rendu hors de <Routes> : ouvrir un panneau n'est jamais une
+ * navigation, l'écran en dessous ne perd donc aucun état.
  */
 export function BoutonFlottantMenu() {
   const location = useLocation()
-  const { mode } = useVerrouillage()
   const [panneau, setPanneau] = useState<Panneau>(null)
   const [reglesDisponibles, setReglesDisponibles] = useState<Regle[]>([])
   const [regleOuverte, setRegleOuverte] = useState<string | null>(null)
@@ -41,7 +39,7 @@ export function BoutonFlottantMenu() {
     void charger()
   }, [profilId, location.pathname, location.search])
 
-  if (!profilId || mode === 'educateur') return null
+  if (!profilId) return null
 
   return (
     <>

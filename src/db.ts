@@ -508,6 +508,29 @@ export async function modifierHeureCreneau(
   await db.profils.update(profilId, { edt: { ...profil.edt, [jour]: jourCreneaux } })
 }
 
+/**
+ * Copie les créneaux d'un jour vers un autre (nouveaux ids, même activité et
+ * heure). Lot 9 : répare les emplois du temps saisis avant le correctif du
+ * jour par défaut, qui rangeaient tout au lundi sans que personne ne s'en
+ * aperçoive.
+ */
+export async function copierCreneauxJour(
+  profilId: string,
+  depuis: JourSemaine,
+  vers: JourSemaine,
+): Promise<void> {
+  const profil = await db.profils.get(profilId)
+  if (!profil) throw new Error('Profil introuvable')
+  const cible = profil.edt[vers]
+  const copies: CreneauEDT[] = profil.edt[depuis].map((c, i) => ({
+    id: nouvelId('creneau'),
+    activiteId: c.activiteId,
+    heureDebut: c.heureDebut,
+    ordre: cible.length + i,
+  }))
+  await db.profils.update(profilId, { edt: { ...profil.edt, [vers]: [...cible, ...copies] } })
+}
+
 /** Retrouve un créneau (et son activité) sans connaître son jour à l'avance. */
 export async function creneauEtActivite(
   profilId: string,

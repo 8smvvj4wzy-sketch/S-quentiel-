@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { listerRegles, supprimerRegle } from '../db'
 import type { Regle } from '../types'
 import { RegleFormModal } from '../composants/RegleFormModal'
 
 /** Bibliothèque de règles (ROADMAP lot 5). */
 export function Regles() {
+  const { profilId } = useParams<{ profilId: string }>()
   const [regles, setRegles] = useState<Regle[]>([])
   const [modal, setModal] = useState<'nouvelle' | Regle | null>(null)
   const [aSupprimer, setASupprimer] = useState<Regle | null>(null)
@@ -19,10 +20,10 @@ export function Regles() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/educateur" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to={`/profil/${profilId}`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
-        <h1 className="barre__titre">Bibliothèque de règles</h1>
+        <h1 className="barre__titre">Règles</h1>
       </div>
 
       <div className="contenu pile" style={{ maxWidth: '40rem' }}>

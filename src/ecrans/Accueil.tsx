@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { listerProfils } from '../db'
+import { useVerrouillage } from '../lib/verrouillage'
+import { SaisiePin } from '../composants/SaisiePin'
 import type { Profil } from '../types'
 
 /**
  * SPEC §4.1 — Liste des profils, grande vignette. Registre jeune.
- * L'accès éducateur se fait par le coin haut-droit, pas par un bouton visible.
+ *
+ * Le bouton Paramétrage est aussi ici, et pas seulement sur l'accueil d'un
+ * profil : sur une tablette neuve il n'y a aucun profil, et c'est justement
+ * dans le paramétrage qu'on en crée un.
  */
 export function Accueil() {
   const [profils, setProfils] = useState<Profil[] | null>(null)
+  const [demandePin, setDemandePin] = useState(false)
+  const { ouvrirEducateur } = useVerrouillage()
+  const naviguer = useNavigate()
 
   useEffect(() => {
     void listerProfils().then(setProfils)
@@ -24,10 +32,7 @@ export function Accueil() {
         {profils === null ? null : profils.length === 0 ? (
           <div className="vide">
             <p>Aucun profil pour l'instant.</p>
-            <p>
-              Un adulte peut en créer un : appui long de 3&nbsp;secondes sur le coin
-              en haut à droite de l'écran.
-            </p>
+            <p>Un adulte peut en créer un depuis « Paramétrage », en bas de l'écran.</p>
           </div>
         ) : (
           <ul
@@ -89,7 +94,21 @@ export function Accueil() {
         <Link to="/a-propos" className="bouton--discret" style={{ lineHeight: '64px' }}>
           À propos
         </Link>
+        <button type="button" className="bouton--discret" onClick={() => setDemandePin(true)}>
+          Paramétrage
+        </button>
       </div>
+
+      {demandePin && (
+        <SaisiePin
+          surAnnulation={() => setDemandePin(false)}
+          surSucces={() => {
+            setDemandePin(false)
+            ouvrirEducateur()
+            naviguer('/parametrage')
+          }}
+        />
+      )}
     </div>
   )
 }

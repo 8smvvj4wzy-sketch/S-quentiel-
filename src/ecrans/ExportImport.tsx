@@ -59,7 +59,7 @@ export function ExportImport() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/educateur" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to="/parametrage" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
         <h1 className="barre__titre">Export / import de la configuration</h1>
