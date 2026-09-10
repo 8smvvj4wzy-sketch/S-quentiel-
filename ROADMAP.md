@@ -64,12 +64,12 @@ réadapter un support pendant un atelier.
 - [x] Tout le catalogue ARASAAC français, sans filtre thématique
 - [x] Images converties en WebP, index allégé
 - [x] Recherche classée par pertinence, filtre par catégorie retiré
-- [ ] Pack reconstruit par le workflow et déployé
+- [x] Pack reconstruit par le workflow et déployé — 13 522 pictos, 98,5 Mo
 
 ## Lot 7 — Choisir un picto sans détour
-- [ ] Sélecteur unique : bibliothèque et catalogue dans la même recherche
-- [ ] Enregistrement du picto en coulisse, sans étape « obtenir »
-- [ ] Suggestions de pictos pendant la saisie d'un libellé
+- [x] Sélecteur unique : bibliothèque et catalogue dans la même recherche
+- [x] Enregistrement du picto en coulisse, sans étape « obtenir »
+- [x] Suggestions de pictos pendant la saisie d'un libellé
 
 ## Lot 8 — Navigation de terrain
 - [ ] Quatre écrans : emploi du temps, séquentiels, règles, TLA
