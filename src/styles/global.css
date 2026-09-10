@@ -1,0 +1,181 @@
+@import '@fontsource/atkinson-hyperlegible/latin-400.css';
+@import '@fontsource/atkinson-hyperlegible/latin-700.css';
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#racine {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font-family: var(--police);
+  font-size: var(--corps-jeune);
+  line-height: 1.35;
+  /* Pas de sélection ni de loupe intempestive sous le doigt d'un jeune. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 700;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--rayon);
+}
+
+/* --- Boutons ---------------------------------------------------------- */
+
+.bouton {
+  min-height: var(--cible);
+  padding: 0 calc(var(--pas) * 2);
+  background: var(--surface);
+  border: 2px solid var(--bordure-forte);
+  color: var(--texte);
+}
+
+.bouton:active {
+  background: var(--fond);
+}
+
+.bouton--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--texte-sur-accent);
+  font-weight: 700;
+}
+
+.bouton--accent:active {
+  background: var(--accent-appuye);
+}
+
+.bouton--danger {
+  border-color: var(--alerte);
+  color: var(--alerte);
+  font-weight: 700;
+}
+
+.bouton--discret {
+  min-height: var(--cible);
+  padding: 0 calc(var(--pas) * 2);
+  background: none;
+  border: none;
+  color: var(--texte-secondaire);
+}
+
+.bouton:disabled,
+.bouton--accent:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* --- Champs ----------------------------------------------------------- */
+
+.champ {
+  min-height: var(--cible);
+  width: 100%;
+  padding: 0 calc(var(--pas) * 1.5);
+  font: inherit;
+  color: var(--texte);
+  background: var(--surface);
+  border: 2px solid var(--bordure-forte);
+  border-radius: var(--rayon);
+}
+
+.champ:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.etiquette {
+  display: block;
+  margin-bottom: var(--pas);
+  font-size: 18px;
+  color: var(--texte-secondaire);
+}
+
+/* --- Mises en page ---------------------------------------------------- */
+
+.ecran {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.barre {
+  display: flex;
+  align-items: center;
+  gap: var(--pas);
+  min-height: var(--cible);
+  padding: var(--pas) calc(var(--pas) * 2);
+  background: var(--surface);
+  border-bottom: 1px solid var(--bordure);
+}
+
+.barre__titre {
+  flex: 1;
+  font-size: 24px;
+}
+
+.contenu {
+  flex: 1;
+  padding: calc(var(--pas) * 2);
+}
+
+.vide {
+  max-width: 32rem;
+  margin: calc(var(--pas) * 6) auto;
+  text-align: center;
+  color: var(--texte-secondaire);
+}
+
+.pile {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pas) * 2);
+}
+
+.ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--pas);
+  flex-wrap: wrap;
+}
+
+/* --- Accessibilité ---------------------------------------------------- */
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
