@@ -37,13 +37,13 @@ Cocher les cases au fur et à mesure.
 - [x] Activité sans séquence : vue plein écran du picto
 
 ## Lot 4 — TLA et vocal
-- [ ] Configuration de la grille par profil (3×2 à 8×6)
-- [ ] Pages TLA : noyau fixe + pages contextuelles
-- [ ] Bandeau de phrase, effacement simple et total
-- [ ] Bouton flottant d'accès au TLA sur tous les écrans, sans perte d'état
-- [ ] Rattachement d'une page TLA à une activité
-- [ ] Réglages vocaux par profil : actif, au tap, à la validation, voix, vitesse
-- [ ] Bouton « Tester la voix » et avertissement si aucune voix française
+- [x] Configuration de la grille par profil (3×2 à 8×6)
+- [x] Pages TLA : noyau fixe + pages contextuelles
+- [x] Bandeau de phrase, effacement simple et total
+- [x] Bouton flottant d'accès au TLA sur tous les écrans, sans perte d'état
+- [x] Rattachement d'une page TLA à une activité
+- [x] Réglages vocaux par profil : actif, au tap, à la validation, voix, vitesse
+- [x] Bouton « Tester la voix » et avertissement si aucune voix française
 
 ## Lot 5 — Règles et finitions
 - [ ] Bibliothèque de règles, rattachement activité et journée
