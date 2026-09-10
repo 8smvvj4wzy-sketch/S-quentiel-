@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { obtenirPictoCatalogue, rechercherPictosLocaux } from '../db'
 import {
-  categoriesCatalogue,
   catalogueDisponible,
   rechercherCatalogue,
   urlImageCatalogue,
@@ -19,15 +18,15 @@ type Onglet = 'bibliotheque' | 'catalogue'
 type Modal = 'photo' | 'composite' | 'zip' | null
 
 /**
- * Écran bibliothèque : recherche, catégories, aperçu (ROADMAP lot 1).
+ * Écran bibliothèque : recherche et aperçu des pictos (ROADMAP lot 1, revu
+ * au lot 6 — le filtre par catégorie a sauté, ARASAAC en expose plus de 300
+ * qui ne veulent rien dire pour un éducateur ; la recherche les remplace).
  * Vit dans l'espace éducateur — c'est l'adulte qui prépare les pictos que le
  * jeune retrouvera ensuite dans les séquentiels, l'EDT et le TLA.
  */
 export function Bibliotheque() {
   const [onglet, setOnglet] = useState<Onglet>('bibliotheque')
   const [recherche, setRecherche] = useState('')
-  const [categorie, setCategorie] = useState('')
-  const [categories, setCategories] = useState<string[]>([])
   const [catalogueOk, setCatalogueOk] = useState(true)
 
   const [bibliotheque, setBibliotheque] = useState<Picto[]>([])
@@ -56,15 +55,12 @@ export function Bibliotheque() {
 
   useEffect(() => {
     void catalogueDisponible().then(setCatalogueOk)
-    void categoriesCatalogue().then(setCategories)
   }, [])
 
   useEffect(() => {
     if (onglet !== 'catalogue') return
-    void rechercherCatalogue({ recherche, categorie: categorie || undefined, idsExclus: idsCatalogueObtenus }).then(
-      setResultatsCatalogue,
-    )
-  }, [onglet, recherche, categorie, idsCatalogueObtenus])
+    void rechercherCatalogue({ recherche, idsExclus: idsCatalogueObtenus }).then(setResultatsCatalogue)
+  }, [onglet, recherche, idsCatalogueObtenus])
 
   async function obtenir(entree: EntreeCatalogue) {
     setEnObtention(entree.id)
@@ -98,22 +94,6 @@ export function Bibliotheque() {
             onChange={(e) => setRecherche(e.target.value)}
             aria-label="Rechercher un picto"
           />
-          {onglet === 'catalogue' && categories.length > 0 && (
-            <select
-              className="champ"
-              style={{ maxWidth: '12rem' }}
-              value={categorie}
-              onChange={(e) => setCategorie(e.target.value)}
-              aria-label="Filtrer par catégorie"
-            >
-              <option value="">Toutes les catégories</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          )}
         </div>
 
         <div className="ligne">

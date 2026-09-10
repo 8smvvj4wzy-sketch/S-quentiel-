@@ -43,3 +43,7 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # Défaut 600 000 ms. Un déploiement avait déjà expiré avec 1500
+          # images ; le pack complet en compte ~13 800.
+          timeout: 1800000

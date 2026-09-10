@@ -52,3 +52,31 @@ Cocher les cases au fur et à mesure.
 - [x] Écran « À propos » avec l'attribution ARASAAC obligatoire
 - [x] Passe d'accessibilité : contrastes, tailles tactiles, `prefers-reduced-motion`
 - [x] Relecture des textes d'interface (registre jeune / registre éducateur)
+
+---
+
+Lots 6 à 9 : refonte « utilisation terrain », après le premier usage réel.
+L'application marchait, mais elle demandait trop de gestes pour préparer ou
+réadapter un support pendant un atelier.
+
+## Lot 6 — Catalogue complet
+- [x] Correctif : l'EDT s'ouvrait sur lundi, la vue jeune lisait le jour courant
+- [x] Tout le catalogue ARASAAC français, sans filtre thématique
+- [x] Images converties en WebP, index allégé
+- [x] Recherche classée par pertinence, filtre par catégorie retiré
+- [ ] Pack reconstruit par le workflow et déployé
+
+## Lot 7 — Choisir un picto sans détour
+- [ ] Sélecteur unique : bibliothèque et catalogue dans la même recherche
+- [ ] Enregistrement du picto en coulisse, sans étape « obtenir »
+- [ ] Suggestions de pictos pendant la saisie d'un libellé
+
+## Lot 8 — Navigation de terrain
+- [ ] Quatre écrans : emploi du temps, séquentiels, règles, TLA
+- [ ] Écran de paramétrage, seul endroit encore protégé par le PIN
+- [ ] Édition libre en dehors du paramétrage
+
+## Lot 9 — EDT et séquentiel souples
+- [ ] Créneau créé en un geste depuis l'emploi du temps
+- [ ] Séquentiel modifiable pendant qu'il tourne
+- [ ] Séquentiel lançable seul, hors emploi du temps

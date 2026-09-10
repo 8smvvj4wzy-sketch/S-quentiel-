@@ -1,4 +1,4 @@
-# Construit le sous-ensemble ARASAAC et le range dans le dépôt.
+# Construit le catalogue ARASAAC et le range dans le dépôt.
 #
 # À lancer à la main : onglet « Actions » → « Pack ARASAAC » → « Run workflow ».
 # Le bouton existe aussi dans l'appli GitHub sur téléphone, et dans le site
@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
     inputs:
       max:
-        description: "Nombre de pictogrammes à embarquer"
-        default: "1500"
+        description: "Plafond du nombre de pictogrammes (vide = catalogue complet)"
+        default: ""
       resolution:
         description: "Taille des images en pixels (300 ou 500)"
         default: "300"
@@ -25,6 +25,8 @@ permissions:
 jobs:
   pack:
     runs-on: ubuntu-latest
+    # Le catalogue complet, c'est ~13 800 images à télécharger et convertir.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,25 +35,36 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
+      # sharp fait la conversion WebP : il faut les dépendances du projet.
+      - run: npm ci
 
       - name: Télécharger les pictogrammes
-        run: node scripts/build-arasaac.mjs --max "${{ inputs.max }}" --resolution "${{ inputs.resolution }}"
+        run: |
+          if [ -n "${{ inputs.max }}" ]; then
+            node scripts/build-arasaac.mjs --max "${{ inputs.max }}" --resolution "${{ inputs.resolution }}"
+          else
+            node scripts/build-arasaac.mjs --resolution "${{ inputs.resolution }}"
+          fi
 
       - name: Mesurer le résultat
         run: |
           echo "### Pack ARASAAC" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- images : $(find public/pack-arasaac -name '*.png' | wc -l)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- images : $(find public/pack-arasaac -name '*.webp' | wc -l)" >> "$GITHUB_STEP_SUMMARY"
           echo "- poids  : $(du -sh public/pack-arasaac | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- index  : $(du -h public/pack-arasaac/index.json | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Ranger le pack dans le dépôt
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/pack-arasaac
+          # -A pour enregistrer aussi la suppression des anciens PNG.
+          git add -A public/pack-arasaac
           if git diff --cached --quiet; then
             echo "Pack déjà à jour, rien à valider."
             exit 0
           fi
-          git commit -m "Pack ARASAAC : ${{ inputs.max }} pictogrammes en ${{ inputs.resolution }} px"
+          git commit -m "Pack ARASAAC : catalogue complet en ${{ inputs.resolution }} px (WebP)"
           git push origin HEAD:"${{ inputs.branche }}"
