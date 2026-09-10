@@ -5,7 +5,10 @@ import { Accueil } from './ecrans/Accueil'
 import { APropos } from './ecrans/APropos'
 import { Bibliotheque } from './ecrans/Bibliotheque'
 import { Educateur } from './ecrans/Educateur'
+import { EditeurSequence } from './ecrans/EditeurSequence'
 import { Profil } from './ecrans/Profil'
+import { Sequences } from './ecrans/Sequences'
+import { VueSequentiel } from './ecrans/VueSequentiel'
 import type { JSX } from 'react'
 
 /**
@@ -27,6 +30,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Accueil />} />
           <Route path="/profil/:profilId" element={<Profil />} />
+          <Route path="/profil/:profilId/sequentiel/:sequenceId" element={<VueSequentiel />} />
           <Route path="/a-propos" element={<APropos />} />
           <Route
             path="/educateur"
@@ -41,6 +45,22 @@ export default function App() {
             element={
               <ReserveEducateur>
                 <Bibliotheque />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/sequences"
+            element={
+              <ReserveEducateur>
+                <Sequences />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/sequences/:sequenceId"
+            element={
+              <ReserveEducateur>
+                <EditeurSequence />
               </ReserveEducateur>
             }
           />

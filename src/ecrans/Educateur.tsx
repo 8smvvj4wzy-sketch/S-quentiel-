@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { creerProfil, listerProfils, renommerProfil, supprimerProfil } from '../db'
+import {
+  creerProfil,
+  listerProfils,
+  reinitialiserCochagesProfil,
+  reinitialiserTousLesCochages,
+  renommerProfil,
+  supprimerProfil,
+} from '../db'
 import { useVerrouillage } from '../lib/verrouillage'
 import type { Profil } from '../types'
 
@@ -13,6 +20,7 @@ export function Educateur() {
   const [profils, setProfils] = useState<Profil[]>([])
   const [nouveau, setNouveau] = useState('')
   const [aSupprimer, setASupprimer] = useState<Profil | null>(null)
+  const [aReinitialiser, setAReinitialiser] = useState<Profil | 'tout' | null>(null)
   const { revenirModeJeune } = useVerrouillage()
   const naviguer = useNavigate()
 
@@ -43,6 +51,12 @@ export function Educateur() {
     await supprimerProfil(profil.id)
     setASupprimer(null)
     await recharger()
+  }
+
+  async function confirmerReinitialisation() {
+    if (aReinitialiser === 'tout') await reinitialiserTousLesCochages()
+    else if (aReinitialiser) await reinitialiserCochagesProfil(aReinitialiser.id)
+    setAReinitialiser(null)
   }
 
   function quitter() {
@@ -114,6 +128,9 @@ export function Educateur() {
                     <button type="button" className="bouton" onClick={() => void renommer(profil)}>
                       Renommer
                     </button>
+                    <button type="button" className="bouton" onClick={() => setAReinitialiser(profil)}>
+                      Réinitialiser les cochages
+                    </button>
                     <button
                       type="button"
                       className="bouton bouton--danger"
@@ -136,10 +153,24 @@ export function Educateur() {
         </section>
 
         <section className="pile">
+          <h2 style={{ fontSize: 22 }}>Séquences</h2>
+          <Link to="/educateur/sequences" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
+            Ouvrir la bibliothèque de séquences
+          </Link>
+        </section>
+
+        <section className="pile">
+          <h2 style={{ fontSize: 22 }}>Cochages</h2>
+          <button type="button" className="bouton bouton--danger" style={{ width: 'fit-content' }} onClick={() => setAReinitialiser('tout')}>
+            Réinitialiser tous les cochages (tous les profils)
+          </button>
+        </section>
+
+        <section className="pile">
           <h2 style={{ fontSize: 22 }}>Reste à venir</h2>
           <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 18 }}>
-            Séquences, activités et règles, emploi du temps, configuration du TLA, réglages
-            vocaux et export JSON arrivent avec les lots suivants.
+            Activités et règles, emploi du temps, configuration du TLA, réglages vocaux et
+            export JSON arrivent avec les lots suivants.
           </p>
         </section>
       </div>
@@ -184,6 +215,49 @@ export function Educateur() {
                 onClick={() => void confirmerSuppression(aSupprimer)}
               >
                 Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {aReinitialiser && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            background: 'rgba(28, 28, 30, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 'calc(var(--pas) * 2)',
+          }}
+        >
+          <div
+            className="pile"
+            style={{
+              background: 'var(--surface)',
+              border: '2px solid var(--bordure-forte)',
+              borderRadius: 'var(--rayon)',
+              padding: 'calc(var(--pas) * 3)',
+              maxWidth: '28rem',
+            }}
+          >
+            <h2 style={{ fontSize: 22 }}>
+              {aReinitialiser === 'tout'
+                ? 'Réinitialiser tous les cochages ?'
+                : `Réinitialiser les cochages de ${aReinitialiser.initiales} ?`}
+            </h2>
+            <p style={{ margin: 0 }}>Toutes les étapes déjà cochées redeviennent à faire.</p>
+            <div className="ligne" style={{ justifyContent: 'flex-end' }}>
+              <button type="button" className="bouton" onClick={() => setAReinitialiser(null)}>
+                Annuler
+              </button>
+              <button type="button" className="bouton bouton--danger" onClick={() => void confirmerReinitialisation()}>
+                Réinitialiser
               </button>
             </div>
           </div>

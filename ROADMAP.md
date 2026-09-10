@@ -22,12 +22,12 @@ Cocher les cases au fur et à mesure.
 - [x] Import d'un pack ARASAAC complémentaire par ZIP
 
 ## Lot 2 — Séquentiels
-- [ ] Bibliothèque de séquences : créer, dupliquer, supprimer
-- [ ] Éditeur d'étapes : picto et/ou texte, réordonnancement par glisser-déposer
-- [ ] Vue jeune : liste d'étapes, cochage, étape en cours mise en avant, écran « Fini »
-- [ ] Option « une étape à la fois »
-- [ ] État de cochage persistant par profil et par créneau
-- [ ] Remise à zéro et annulation depuis l'espace éducateur
+- [x] Bibliothèque de séquences : créer, dupliquer, supprimer
+- [x] Éditeur d'étapes : picto et/ou texte, réordonnancement par glisser-déposer
+- [x] Vue jeune : liste d'étapes, cochage, étape en cours mise en avant, écran « Fini »
+- [x] Option « une étape à la fois »
+- [x] État de cochage persistant par profil et par créneau
+- [x] Remise à zéro et annulation depuis l'espace éducateur
 
 ## Lot 3 — Emploi du temps
 - [ ] Bibliothèque d'activités : nom, picto, séquence rattachée
