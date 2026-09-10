@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { creerPageTLA, listerPagesTLA, supprimerPageTLA } from '../db'
 import type { PageTLA } from '../types'
 
 /** Bibliothèque de pages TLA : noyau et pages contextuelles (SPEC §4.5). */
 export function PagesTLA() {
+  const { profilId } = useParams<{ profilId: string }>()
   const [pages, setPages] = useState<PageTLA[]>([])
   const [nouveau, setNouveau] = useState('')
   const [aSupprimer, setASupprimer] = useState<PageTLA | null>(null)
@@ -26,7 +27,7 @@ export function PagesTLA() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/educateur" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to={`/profil/${profilId}/tla`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
         <h1 className="barre__titre">Pages du tableau de communication</h1>
@@ -74,7 +75,7 @@ export function PagesTLA() {
                   borderRadius: 'var(--rayon)',
                 }}
               >
-                <Link to={`/educateur/tla/${p.id}`} style={{ color: 'var(--texte)', textDecoration: 'none', fontWeight: 700 }}>
+                <Link to={`/profil/${profilId}/tla/pages/${p.id}`} style={{ color: 'var(--texte)', textDecoration: 'none', fontWeight: 700 }}>
                   {p.nom} <span style={{ fontWeight: 400, color: 'var(--texte-secondaire)' }}>({p.pictoIds.length} picto{p.pictoIds.length > 1 ? 's' : ''})</span>
                 </Link>
                 <button type="button" className="bouton bouton--danger" onClick={() => setASupprimer(p)}>

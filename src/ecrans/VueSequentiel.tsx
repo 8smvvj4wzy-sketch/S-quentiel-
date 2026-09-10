@@ -1,7 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { cocherEtape, decocherEtape, lireCochage, sequence as chargerSequence, picto as chargerPicto } from '../db'
-import { useVerrouillage } from '../lib/verrouillage'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  ajouterEtape,
+  cocherEtape,
+  decocherEtape,
+  lireCochage,
+  modifierEtape,
+  reordonnerEtapes,
+  sequence as chargerSequence,
+  picto as chargerPicto,
+  supprimerEtape,
+} from '../db'
+import { EtapeFormModal } from '../composants/EtapeFormModal'
+import { useGlisserDeposer } from '../lib/useGlisserDeposer'
 import { useObjectUrl } from '../lib/useObjectUrl'
 import type { Etape, EtatCochage, Picto, Sequence } from '../types'
 
@@ -15,11 +26,63 @@ function ImagePictoEtape({ pictoId, taille }: { pictoId: string | undefined; tai
   return <img src={url} alt="" style={{ width: taille, height: taille, objectFit: 'contain' }} />
 }
 
+function LigneEtapeEdition({
+  etape,
+  poignee,
+  surModifier,
+  surSupprimer,
+}: {
+  etape: Etape
+  poignee: object
+  surModifier: () => void
+  surSupprimer: () => void
+}) {
+  const [picto, setPicto] = useState<Picto | null>(null)
+  const url = useObjectUrl(picto?.image)
+  useEffect(() => {
+    if (etape.pictoId) void chargerPicto(etape.pictoId).then((p) => setPicto(p ?? null))
+    else setPicto(null)
+  }, [etape.pictoId])
+
+  return (
+    <li
+      className="ligne"
+      style={{
+        justifyContent: 'space-between',
+        padding: 'var(--pas)',
+        background: 'var(--surface)',
+        border: '1px solid var(--bordure)',
+        borderRadius: 'var(--rayon)',
+      }}
+    >
+      <div className="ligne" {...poignee} style={{ ...(poignee as { style?: object }).style, flex: 1 }}>
+        <span aria-hidden="true" style={{ fontSize: 20, color: 'var(--texte-secondaire)' }}>
+          ⠿
+        </span>
+        {url && <img src={url} alt="" style={{ width: 40, height: 40, objectFit: 'contain' }} />}
+        <span>{etape.texte ?? '…'}</span>
+      </div>
+      <span className="ligne">
+        <button type="button" className="bouton" onClick={surModifier}>
+          Modifier
+        </button>
+        <button type="button" className="bouton bouton--danger" onClick={surSupprimer}>
+          Supprimer
+        </button>
+      </span>
+    </li>
+  )
+}
+
 /**
  * Vue jeune du séquentiel (SPEC §4.3). Accessible soit via l'emploi du temps
- * (lot 3, `?creneau=<id du créneau>`), soit en prévisualisation directe
- * depuis l'éditeur de séquence — dans ce cas `creneauId` vaut l'id de la
- * séquence elle-même, pour que le cochage ait tout de même un repère stable.
+ * (`?creneau=<id du créneau>`), soit lancé directement depuis l'écran
+ * Séquentiels — dans ce cas `creneauId` vaut l'id de la séquence elle-même,
+ * pour que le cochage ait tout de même un repère stable.
+ *
+ * Depuis le lot 9, un bouton « Modifier » bascule dans un mode édition en
+ * place (ajouter, modifier, supprimer, réordonner des étapes) : sur le
+ * terrain, on réadapte une séquence pendant qu'on la fait, pas après.
  *
  * La lecture vocale des étapes (SPEC §6) arrive avec les réglages vocaux du
  * lot 4 : elle dépend d'une UI de configuration qui n'existe pas encore.
@@ -29,10 +92,11 @@ export function VueSequentiel() {
   const [searchParams] = useSearchParams()
   const creneauId = searchParams.get('creneau') ?? sequenceId ?? ''
   const naviguer = useNavigate()
-  const { mode } = useVerrouillage()
 
   const [seq, setSeq] = useState<Sequence | null | undefined>(undefined)
   const [cochage, setCochage] = useState<EtatCochage | undefined>(undefined)
+  const [modeEdition, setModeEdition] = useState(false)
+  const [modalEtape, setModalEtape] = useState<'nouvelle' | Etape | null>(null)
 
   const recharger = useCallback(async () => {
     if (!sequenceId || !profilId) return
@@ -43,6 +107,10 @@ export function VueSequentiel() {
   useEffect(() => {
     void recharger()
   }, [recharger])
+
+  const { liste, poignee } = useGlisserDeposer(seq?.etapes ?? [], (ordre) => {
+    if (sequenceId) void reordonnerEtapes(sequenceId, ordre).then(recharger)
+  })
 
   if (seq === undefined) return null
   if (seq === null || !profilId) {
@@ -59,8 +127,9 @@ export function VueSequentiel() {
   async function basculer(etape: Etape) {
     if (!profilId) return
     if (etapesFaites.has(etape.id)) {
-      // En mode jeune, une étape cochée ne se décoche pas (SPEC §4.3, §5).
-      if (mode !== 'educateur') return
+      // Décochage libre depuis le lot 8 : sur le terrain, on se trompe et il
+      // faut pouvoir revenir en arrière tout de suite. (SPEC §4.3 et §5
+      // l'interdisaient en mode jeune ; écart assumé.)
       await decocherEtape(profilId, creneauId, etape.id)
     } else {
       await cocherEtape(profilId, creneauId, etape.id)
@@ -70,6 +139,60 @@ export function VueSequentiel() {
 
   function retour() {
     naviguer(`/profil/${profilId}`)
+  }
+
+  async function validerEtape(donnees: { pictoId?: string; texte?: string }) {
+    if (!sequenceId) return
+    if (modalEtape && modalEtape !== 'nouvelle') {
+      await modifierEtape(sequenceId, modalEtape.id, donnees)
+    } else {
+      await ajouterEtape(sequenceId, donnees)
+    }
+    setModalEtape(null)
+    await recharger()
+  }
+
+  if (modeEdition) {
+    return (
+      <div className="ecran">
+        <div className="barre">
+          <span className="barre__titre">{seq.nom}</span>
+          <button type="button" className="bouton bouton--accent" onClick={() => setModeEdition(false)}>
+            Terminé
+          </button>
+        </div>
+        <div className="contenu pile">
+          {liste.length === 0 ? (
+            <p style={{ margin: 0, color: 'var(--texte-secondaire)' }}>
+              Aucune étape pour l'instant. Appuyer sur « + Ajouter une étape ».
+            </p>
+          ) : (
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} className="pile">
+              {liste.map((etape) => (
+                <LigneEtapeEdition
+                  key={etape.id}
+                  etape={etape}
+                  poignee={poignee(etape.id)}
+                  surModifier={() => setModalEtape(etape)}
+                  surSupprimer={() => sequenceId && void supprimerEtape(sequenceId, etape.id).then(recharger)}
+                />
+              ))}
+            </ul>
+          )}
+          <button type="button" className="bouton" style={{ width: 'fit-content' }} onClick={() => setModalEtape('nouvelle')}>
+            + Ajouter une étape
+          </button>
+        </div>
+
+        {modalEtape && (
+          <EtapeFormModal
+            etapeInitiale={modalEtape === 'nouvelle' ? undefined : modalEtape}
+            surValidation={(d) => void validerEtape(d)}
+            surFermeture={() => setModalEtape(null)}
+          />
+        )}
+      </div>
+    )
   }
 
   if (toutesFaites) {
@@ -100,15 +223,13 @@ export function VueSequentiel() {
     return (
       <div className="ecran">
         <div className="barre">
-          {mode === 'educateur' && (
-            <Link to={`/educateur/sequences/${sequenceId}`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
-              Quitter l'aperçu
-            </Link>
-          )}
           <span className="barre__titre">{seq.nom}</span>
           <span style={{ color: 'var(--texte-secondaire)' }}>
             Étape {indice + 1} sur {seq.etapes.length}
           </span>
+          <button type="button" className="bouton" onClick={() => setModeEdition(true)}>
+            Modifier
+          </button>
         </div>
         <div
           className="contenu"
@@ -143,12 +264,10 @@ export function VueSequentiel() {
   return (
     <div className="ecran">
       <div className="barre">
-        {mode === 'educateur' && (
-          <Link to={`/educateur/sequences/${sequenceId}`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
-            Quitter l'aperçu
-          </Link>
-        )}
         <span className="barre__titre">{seq.nom}</span>
+        <button type="button" className="bouton" onClick={() => setModeEdition(true)}>
+          Modifier
+        </button>
       </div>
       <div className="contenu pile">
         {seq.etapes.map((etape) => {

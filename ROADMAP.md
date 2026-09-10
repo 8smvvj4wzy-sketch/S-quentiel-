@@ -72,11 +72,11 @@ réadapter un support pendant un atelier.
 - [x] Suggestions de pictos pendant la saisie d'un libellé
 
 ## Lot 8 — Navigation de terrain
-- [ ] Quatre écrans : emploi du temps, séquentiels, règles, TLA
-- [ ] Écran de paramétrage, seul endroit encore protégé par le PIN
-- [ ] Édition libre en dehors du paramétrage
+- [x] Quatre écrans : emploi du temps, séquentiels, règles, TLA
+- [x] Écran de paramétrage, seul endroit encore protégé par le PIN
+- [x] Édition libre en dehors du paramétrage
 
 ## Lot 9 — EDT et séquentiel souples
-- [ ] Créneau créé en un geste depuis l'emploi du temps
-- [ ] Séquentiel modifiable pendant qu'il tourne
-- [ ] Séquentiel lançable seul, hors emploi du temps
+- [x] Créneau créé en un geste depuis l'emploi du temps
+- [x] Séquentiel modifiable pendant qu'il tourne
+- [x] Séquentiel lançable seul, hors emploi du temps

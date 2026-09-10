@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   activite as chargerActivite,
-  ajouterCreneau,
+  copierCreneauxJour,
   db,
   definirReglesJournee,
   listerRegles,
@@ -11,7 +11,7 @@ import {
   supprimerCreneau,
 } from '../db'
 import { JOURS_SEMAINE, type Activite, type CreneauEDT, type JourSemaine, type Profil, type Regle } from '../types'
-import { ChoisirActiviteModal } from '../composants/ChoisirActiviteModal'
+import { CreneauFormModal } from '../composants/CreneauFormModal'
 import { jourActuel } from '../lib/edt'
 import { useGlisserDeposer } from '../lib/useGlisserDeposer'
 
@@ -81,8 +81,9 @@ export function ConstruireEDT() {
   // partir sur lundi rangeait silencieusement les créneaux dans un jour que
   // personne ne regardait.
   const [jour, setJour] = useState<JourSemaine>(jourActuel())
-  const [choixActiviteOuvert, setChoixActiviteOuvert] = useState(false)
+  const [ajoutOuvert, setAjoutOuvert] = useState(false)
   const [regles, setRegles] = useState<Regle[]>([])
+  const [jourSource, setJourSource] = useState<JourSemaine | null>(null)
 
   const recharger = useCallback(async () => {
     if (!profilId) return
@@ -99,6 +100,17 @@ export function ConstruireEDT() {
 
   const creneauxJour = profil?.edt[jour] ?? []
 
+  // Répare les EDT saisis avant le correctif du jour par défaut (lot 6) : si
+  // le jour du jour est vide mais qu'un autre jour est rempli, on propose de
+  // copier plutôt que de laisser croire que rien n'a été préparé.
+  useEffect(() => {
+    if (!profil || jour !== jourActuel() || profil.edt[jour].length > 0) {
+      setJourSource(null)
+      return
+    }
+    setJourSource(JOURS_SEMAINE.find((j) => j !== jour && profil.edt[j].length > 0) ?? null)
+  }, [profil, jour])
+
   const { liste, poignee } = useGlisserDeposer(creneauxJour, (ordre) => {
     if (profilId) void reordonnerCreneaux(profilId, jour, ordre).then(recharger)
   })
@@ -108,7 +120,7 @@ export function ConstruireEDT() {
     return (
       <div className="ecran contenu vide">
         <p>Profil introuvable.</p>
-        <Link to="/educateur" className="bouton">
+        <Link to={`/profil/${profilId}/edt`} className="bouton">
           Retour
         </Link>
       </div>
@@ -118,7 +130,7 @@ export function ConstruireEDT() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/educateur" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to={`/profil/${profilId}/edt`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
         <h1 className="barre__titre">Emploi du temps — {profil.initiales}</h1>
@@ -172,6 +184,36 @@ export function ConstruireEDT() {
           ))}
         </div>
 
+        {jourSource && (
+          <div
+            className="ligne"
+            style={{
+              background: 'var(--surface)',
+              border: '2px solid var(--en-cours)',
+              borderRadius: 'var(--rayon)',
+              padding: 'var(--pas)',
+              flexWrap: 'wrap',
+            }}
+          >
+            <span style={{ flex: 1 }}>
+              Des créneaux existent le {LIBELLES_JOUR[jourSource].toLowerCase()}. Les copier sur
+              aujourd'hui&nbsp;?
+            </span>
+            <button
+              type="button"
+              className="bouton bouton--accent"
+              onClick={() => {
+                if (profilId && jourSource) void copierCreneauxJour(profilId, jourSource, jour).then(recharger)
+              }}
+            >
+              Copier
+            </button>
+            <button type="button" className="bouton" onClick={() => setJourSource(null)}>
+              Ignorer
+            </button>
+          </div>
+        )}
+
         {liste.length === 0 ? (
           <div className="vide">
             <p>Aucun créneau ce jour-là. Appuyer sur « + Ajouter un créneau ».</p>
@@ -194,7 +236,7 @@ export function ConstruireEDT() {
           </ul>
         )}
 
-        <button type="button" className="bouton bouton--accent" style={{ width: 'fit-content' }} onClick={() => setChoixActiviteOuvert(true)}>
+        <button type="button" className="bouton bouton--accent" style={{ width: 'fit-content' }} onClick={() => setAjoutOuvert(true)}>
           + Ajouter un créneau
         </button>
         <p style={{ margin: 0, fontSize: 14, color: 'var(--texte-secondaire)' }}>
@@ -203,13 +245,15 @@ export function ConstruireEDT() {
         </p>
       </div>
 
-      {choixActiviteOuvert && (
-        <ChoisirActiviteModal
-          surFermeture={() => setChoixActiviteOuvert(false)}
-          surChoix={(a) => {
-            setChoixActiviteOuvert(false)
-            if (profilId) void ajouterCreneau(profilId, jour, a.id).then(recharger)
+      {ajoutOuvert && profilId && (
+        <CreneauFormModal
+          profilId={profilId}
+          jour={jour}
+          surValidation={() => {
+            setAjoutOuvert(false)
+            void recharger()
           }}
+          surFermeture={() => setAjoutOuvert(false)}
         />
       )}
     </div>

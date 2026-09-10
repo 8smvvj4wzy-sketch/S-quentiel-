@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { creerSequence, dupliquerSequence, listerSequences, supprimerSequence } from '../db'
 import type { Sequence } from '../types'
 
-/** Bibliothèque de séquences : créer, dupliquer, supprimer (ROADMAP lot 2). */
+/**
+ * Écran Séquentiels (ROADMAP lot 2, revu au lot 8) : créer, dupliquer,
+ * supprimer, modifier — et surtout **lancer** une séquence directement, sans
+ * passer par l'emploi du temps. Le cochage d'une séquence lancée seule est
+ * suivi à part, sous l'id de la séquence.
+ */
 export function Sequences() {
+  const { profilId } = useParams<{ profilId: string }>()
   const [sequences, setSequences] = useState<Sequence[]>([])
   const [nouveau, setNouveau] = useState('')
   const [aSupprimer, setASupprimer] = useState<Sequence | null>(null)
@@ -37,10 +43,10 @@ export function Sequences() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/educateur" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to={`/profil/${profilId}`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
-        <h1 className="barre__titre">Bibliothèque de séquences</h1>
+        <h1 className="barre__titre">Séquentiels</h1>
       </div>
 
       <div className="contenu pile" style={{ maxWidth: '40rem' }}>
@@ -80,10 +86,26 @@ export function Sequences() {
                   borderRadius: 'var(--rayon)',
                 }}
               >
-                <Link to={`/educateur/sequences/${s.id}`} style={{ color: 'var(--texte)', textDecoration: 'none', fontWeight: 700 }}>
+                <span style={{ fontWeight: 700 }}>
                   {s.nom} <span style={{ fontWeight: 400, color: 'var(--texte-secondaire)' }}>({s.etapes.length} étape{s.etapes.length > 1 ? 's' : ''})</span>
-                </Link>
+                </span>
                 <span className="ligne">
+                  {s.etapes.length > 0 && (
+                    <Link
+                      to={`/profil/${profilId}/sequentiel/${s.id}`}
+                      className="bouton bouton--accent"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      Lancer
+                    </Link>
+                  )}
+                  <Link
+                    to={`/profil/${profilId}/sequentiels/${s.id}`}
+                    className="bouton"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    Modifier
+                  </Link>
                   <button type="button" className="bouton" onClick={() => void dupliquer(s.id)}>
                     Dupliquer
                   </button>

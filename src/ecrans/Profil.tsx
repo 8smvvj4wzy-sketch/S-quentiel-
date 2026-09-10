@@ -130,10 +130,17 @@ export function Profil() {
   return (
     <div className="ecran">
       <div className="barre">
-        <Link to="/" className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
+        <Link to={`/profil/${profilId}`} className="bouton" style={{ lineHeight: '60px', textDecoration: 'none' }}>
           Retour
         </Link>
-        <h1 className="barre__titre">{profil ? profil.initiales : 'Profil introuvable'}</h1>
+        <h1 className="barre__titre">Emploi du temps</h1>
+        <Link
+          to={`/profil/${profilId}/edt/modifier`}
+          className="bouton"
+          style={{ lineHeight: '60px', textDecoration: 'none' }}
+        >
+          Modifier
+        </Link>
       </div>
 
       {reglesJournee.length > 0 && (
@@ -164,7 +171,7 @@ export function Profil() {
         {!lignes || lignes.length === 0 ? (
           <div className="vide">
             <p>Aucune activité pour l'instant.</p>
-            <p>Un adulte peut préparer la journée depuis l'espace éducateur.</p>
+            <p>Appuyer sur « Modifier » pour préparer la journée.</p>
           </div>
         ) : (
           lignes.map((ligne) => (
