@@ -1,0 +1,39 @@
+/*
+ * Direction visuelle — CLAUDE.md.
+ * Le châssis reste silencieux : les pictogrammes portent la couleur.
+ * Pas de dégradés, pas d'ombres portées.
+ */
+:root {
+  /* Fonds et surfaces */
+  --fond: #f2f3f4;
+  --surface: #ffffff;
+  --bordure: #d8dade;
+  --bordure-forte: #b6babf;
+
+  /* Texte */
+  --texte: #1c1c1e;
+  --texte-secondaire: #6b6f76;
+  --texte-sur-accent: #ffffff;
+
+  /* Un seul accent d'action */
+  --accent: #1d4e89;
+  --accent-appuye: #163c6b;
+
+  /* Statuts */
+  --fait: #2e7d4f;
+  --en-cours: #e8a33d;
+  --alerte: #9a2b2b;
+
+  /* Cibles tactiles — CLAUDE.md §4 */
+  --cible: 64px;
+  --cible-jeune: 88px;
+
+  /* Rythme */
+  --pas: 8px;
+  --rayon: 4px;
+
+  /* Typographie */
+  --police: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --corps-jeune: 20px;
+  --titre-etape: 32px;
+}

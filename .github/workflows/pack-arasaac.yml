@@ -1,0 +1,57 @@
+# Construit le sous-ensemble ARASAAC et le range dans le dépôt.
+#
+# À lancer à la main : onglet « Actions » → « Pack ARASAAC » → « Run workflow ».
+# Le bouton existe aussi dans l'appli GitHub sur téléphone, et dans le site
+# mobile. Le runner GitHub a accès à arasaac.org ; la tablette, elle, n'en a
+# jamais besoin : elle lit les fichiers déposés ici.
+name: Pack ARASAAC
+
+on:
+  workflow_dispatch:
+    inputs:
+      max:
+        description: "Nombre de pictogrammes à embarquer"
+        default: "1500"
+      resolution:
+        description: "Taille des images en pixels (300 ou 500)"
+        default: "300"
+      branche:
+        description: "Branche où déposer le pack"
+        default: "main"
+
+permissions:
+  contents: write
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Télécharger les pictogrammes
+        run: node scripts/build-arasaac.mjs --max "${{ inputs.max }}" --resolution "${{ inputs.resolution }}"
+
+      - name: Mesurer le résultat
+        run: |
+          echo "### Pack ARASAAC" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- images : $(find public/pack-arasaac -name '*.png' | wc -l)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- poids  : $(du -sh public/pack-arasaac | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ranger le pack dans le dépôt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/pack-arasaac
+          if git diff --cached --quiet; then
+            echo "Pack déjà à jour, rien à valider."
+            exit 0
+          fi
+          git commit -m "Pack ARASAAC : ${{ inputs.max }} pictogrammes en ${{ inputs.resolution }} px"
+          git push origin HEAD:"${{ inputs.branche }}"
