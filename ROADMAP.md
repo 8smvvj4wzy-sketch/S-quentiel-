@@ -5,7 +5,7 @@ Cocher les cases au fur et à mesure.
 
 ## Lot 0 — Socle technique
 - [x] Projet Vite + React + TypeScript, `base` configurée pour GitHub Pages
-- [ ] Workflow `deploy.yml` en place, premier déploiement vérifié — *workflow en place ; reste à activer Pages sur la source « GitHub Actions » et à vérifier sur tablette*
+- [x] Workflow `deploy.yml` en place, premier déploiement vérifié — *site en ligne, reste à vérifier concrètement sur tablette*
 - [x] PWA installable, précache complet, test en mode avion
 - [x] Police Atkinson Hyperlegible embarquée, tokens de couleur définis
 - [x] `src/types.ts` complet, conforme à SPEC.md §2
@@ -14,12 +14,12 @@ Cocher les cases au fur et à mesure.
 - [x] Écran d'accueil et gestion des profils (créer, renommer, supprimer)
 
 ## Lot 1 — Socle pictogrammes
-- [ ] Sous-ensemble ARASAAC embarqué, avec index de recherche français
-- [ ] Écran bibliothèque : recherche, catégories, aperçu
-- [ ] Import photo (galerie + appareil photo), recadrage carré, compression 512 px
-- [ ] Générateur de picto composite : 2 à 4 pictos, 3 dispositions, rendu PNG
-- [ ] Édition des libellés affiché et parlé sur chaque picto
-- [ ] Import d'un pack ARASAAC complémentaire par ZIP
+- [x] Sous-ensemble ARASAAC embarqué, avec index de recherche français
+- [x] Écran bibliothèque : recherche, catégories, aperçu
+- [x] Import photo (galerie + appareil photo), recadrage carré, compression 512 px
+- [x] Générateur de picto composite : 2 à 4 pictos, 3 dispositions, rendu PNG
+- [x] Édition des libellés affiché et parlé sur chaque picto
+- [x] Import d'un pack ARASAAC complémentaire par ZIP
 
 ## Lot 2 — Séquentiels
 - [ ] Bibliothèque de séquences : créer, dupliquer, supprimer

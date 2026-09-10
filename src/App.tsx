@@ -3,6 +3,7 @@ import { CoinEducateur } from './composants/CoinEducateur'
 import { FournisseurVerrouillage, useVerrouillage } from './lib/verrouillage'
 import { Accueil } from './ecrans/Accueil'
 import { APropos } from './ecrans/APropos'
+import { Bibliotheque } from './ecrans/Bibliotheque'
 import { Educateur } from './ecrans/Educateur'
 import { Profil } from './ecrans/Profil'
 import type { JSX } from 'react'
@@ -32,6 +33,14 @@ export default function App() {
             element={
               <ReserveEducateur>
                 <Educateur />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/bibliotheque"
+            element={
+              <ReserveEducateur>
+                <Bibliotheque />
               </ReserveEducateur>
             }
           />

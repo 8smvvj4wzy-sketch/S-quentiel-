@@ -17,15 +17,31 @@ export default defineConfig({
         // Précache complet : tout doit être disponible hors ligne, y compris
         // les pictogrammes embarqués et les polices.
         globPatterns: ['**/*.{js,css,html,png,svg,woff,woff2,json}'],
-        // Le pack ARASAAC est volontairement hors précache tant que le lot 1
-        // n'a pas tranché : 1500 entrées alourdiraient beaucoup le service
-        // worker, alors que SPEC §2 range les pictos en Blobs dans IndexedDB.
-        // Le lot 1 doit choisir — précache direct, ou amorçage en base au
-        // premier lancement — et lever cette exclusion en conséquence.
+        // Décision lot 1 : le pack ARASAAC (1499 images, ~16 Mo) reste hors du
+        // précache d'installation. Le premier déploiement avec le pack a
+        // d'ailleurs expiré côté GitHub Pages en tentant de tout traiter
+        // d'un coup — un signal concret que ce volume ne doit pas peser sur
+        // l'installation de l'app. À la place, chaque image du catalogue est
+        // mise en cache dès qu'elle est vue une première fois (runtimeCaching
+        // ci-dessous), puis y reste indéfiniment : un éducateur qui prépare
+        // la bibliothèque avec le wifi de l'établissement rend ces pictos
+        // disponibles pour l'usage hors ligne qui suit, sans gonfler le
+        // service worker pour des images jamais utilisées par ce profil.
         globIgnores: ['pack-arasaac/**'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: BASE + 'index.html',
         cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/pack-arasaac/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pack-arasaac',
+              expiration: { maxEntries: 2000 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'Séquentiel — supports visuels',

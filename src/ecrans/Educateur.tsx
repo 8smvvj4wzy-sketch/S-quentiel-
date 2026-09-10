@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { creerProfil, listerProfils, renommerProfil, supprimerProfil } from '../db'
 import { useVerrouillage } from '../lib/verrouillage'
 import type { Profil } from '../types'
 
 /**
- * SPEC §4.6 — Espace éducateur. Ce lot ne contient que la gestion des profils ;
- * les autres rubriques arrivent avec leurs lots (ROADMAP).
- * Registre éducateur : on parle à l'adulte.
+ * SPEC §4.6 — Espace éducateur. Gestion des profils et accès à la
+ * bibliothèque de pictos ; les autres rubriques arrivent avec leurs lots
+ * (ROADMAP). Registre éducateur : on parle à l'adulte.
  */
 export function Educateur() {
   const [profils, setProfils] = useState<Profil[]>([])
@@ -129,11 +129,17 @@ export function Educateur() {
         </section>
 
         <section className="pile">
+          <h2 style={{ fontSize: 22 }}>Pictos</h2>
+          <Link to="/educateur/bibliotheque" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
+            Ouvrir la bibliothèque de pictos
+          </Link>
+        </section>
+
+        <section className="pile">
           <h2 style={{ fontSize: 22 }}>Reste à venir</h2>
           <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 18 }}>
-            Bibliothèques de pictos, séquences, activités et règles, emploi du temps,
-            configuration du TLA, réglages vocaux et export JSON arrivent avec les lots
-            suivants.
+            Séquences, activités et règles, emploi du temps, configuration du TLA, réglages
+            vocaux et export JSON arrivent avec les lots suivants.
           </p>
         </section>
       </div>
