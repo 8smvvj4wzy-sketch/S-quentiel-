@@ -81,14 +81,20 @@ const MOTS_CLES = [
 
 /* --- Réseau ------------------------------------------------------------ */
 
+/** Une 404 est définitive : ce picto n'a pas d'image à cette résolution,
+ *  la répéter ne change rien. On ne la retente donc pas. */
+class Erreur404 extends Error {}
+
 async function recuperer(url, type = 'json') {
   let derniere
   for (let essai = 1; essai <= 4; essai++) {
     try {
       const reponse = await fetch(url, { headers: { 'User-Agent': 'sequentiel-ime/0.1' } })
+      if (reponse.status === 404) throw new Erreur404(`HTTP 404 sur ${url}`)
       if (!reponse.ok) throw new Error(`HTTP ${reponse.status}`)
       return type === 'json' ? await reponse.json() : Buffer.from(await reponse.arrayBuffer())
     } catch (e) {
+      if (e instanceof Erreur404) throw e
       derniere = e
       if (essai < 4) await new Promise((r) => setTimeout(r, 2 ** essai * 1000))
     }
@@ -152,6 +158,7 @@ async function principal() {
   await mkdir(SORTIE, { recursive: true })
 
   const index = []
+  const echecs = []
   let telecharges = 0
   let ignores = 0
 
@@ -160,6 +167,21 @@ async function principal() {
     const fichier = path.join(SORTIE, `${id}.png`)
     const mots = motsDuPicto(picto)
 
+    if (!FORCE && existsSync(fichier)) {
+      ignores++
+    } else {
+      try {
+        const image = await recuperer(`${STATIQUE}/${id}/${id}_${RESOLUTION}.png`, 'binaire')
+        await writeFile(fichier, image)
+        telecharges++
+      } catch (e) {
+        // Un picto sans image à cette résolution ne doit pas faire échouer
+        // tout le pack : on le note et on continue avec les autres.
+        echecs.push({ id, libelle: mots[0], raison: e.message })
+        continue
+      }
+    }
+
     index.push({
       id,
       libelle: mots[0],
@@ -167,14 +189,9 @@ async function principal() {
       categories: picto.categories ?? [],
     })
 
-    if (!FORCE && existsSync(fichier)) {
-      ignores++
-      continue
+    if (telecharges > 0 && telecharges % 100 === 0) {
+      console.log(`  ${telecharges} images téléchargées…`)
     }
-    const image = await recuperer(`${STATIQUE}/${id}/${id}_${RESOLUTION}.png`, 'binaire')
-    await writeFile(fichier, image)
-    telecharges++
-    if (telecharges % 100 === 0) console.log(`  ${telecharges} images téléchargées…`)
   }
 
   index.sort((a, b) => a.libelle.localeCompare(b.libelle, 'fr'))
@@ -199,6 +216,11 @@ async function principal() {
 
   console.log(`\nTerminé.`)
   console.log(`  ${telecharges} téléchargées, ${ignores} déjà présentes`)
+  if (echecs.length > 0) {
+    console.log(`  ${echecs.length} ignorés (pas d'image à cette résolution) :`)
+    for (const e of echecs.slice(0, 20)) console.log(`    - ${e.id} (${e.libelle}) : ${e.raison}`)
+    if (echecs.length > 20) console.log(`    … et ${echecs.length - 20} autres`)
+  }
   console.log(`  ${index.length} entrées dans index.json`)
   console.log(`  ${(octets / 1024 / 1024).toFixed(1)} Mo dans public/pack-arasaac/`)
 }
