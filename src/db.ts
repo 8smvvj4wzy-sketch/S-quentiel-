@@ -607,3 +607,144 @@ export async function modifierReglagesVocaux(
 ): Promise<void> {
   await db.profils.update(profilId, { vocal })
 }
+
+/* --- Règles ---------------------------------------------------------------
+ * Communes à l'établissement (SPEC §2). Rattachées à une ou plusieurs
+ * activités (Activite.regleIds) et/ou à la journée d'un profil
+ * (Profil.reglesJournee).
+ */
+
+export async function listerRegles(): Promise<Regle[]> {
+  const regles = await db.regles.toArray()
+  return regles.sort((a, b) => a.texte.localeCompare(b.texte, 'fr'))
+}
+
+export async function regle(id: string): Promise<Regle | undefined> {
+  return db.regles.get(id)
+}
+
+export async function creerRegle(donnees: { texte: string; pictoId?: string }): Promise<Regle> {
+  const nouvelle: Regle = { id: nouvelId('regle'), texte: donnees.texte.trim(), pictoId: donnees.pictoId }
+  await db.regles.add(nouvelle)
+  return nouvelle
+}
+
+export async function modifierRegle(
+  id: string,
+  patch: Partial<Pick<Regle, 'texte' | 'pictoId'>>,
+): Promise<void> {
+  await db.regles.update(id, patch)
+}
+
+/** Reste à retirer des activités et profils qui la référencent : ils
+ *  ignorent simplement un id de règle disparu à l'affichage. */
+export async function supprimerRegle(id: string): Promise<void> {
+  await db.regles.delete(id)
+}
+
+export async function definirReglesActivite(activiteId: string, regleIds: string[]): Promise<void> {
+  await db.activites.update(activiteId, { regleIds })
+}
+
+export async function definirReglesJournee(profilId: string, regleIds: string[]): Promise<void> {
+  await db.profils.update(profilId, { reglesJournee: regleIds })
+}
+
+/* --- Export / import de la configuration --------------------------------
+ * SPEC §4.6 : « pour dupliquer le paramétrage d'une tablette à l'autre sans
+ * tout ressaisir ». Sont exportés les données communes à l'établissement et
+ * les profils (y compris leurs réglages TLA et vocaux) — pas le code PIN de
+ * la tablette (propre à chaque appareil), ni les cochages (état du jour,
+ * pas de la configuration).
+ */
+
+type PictoExporte = Omit<Picto, 'image'> & { imageBase64: string }
+
+type ConfigurationExportee = {
+  version: 1
+  exporteLe: string
+  pictos: PictoExporte[]
+  sequences: Sequence[]
+  activites: Activite[]
+  regles: Regle[]
+  pagesTLA: PageTLA[]
+  profils: Profil[]
+}
+
+function blobEnBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const lecteur = new FileReader()
+    lecteur.onload = () => resolve((lecteur.result as string).split(',')[1] ?? '')
+    lecteur.onerror = () => reject(new Error('Lecture du picto impossible'))
+    lecteur.readAsDataURL(blob)
+  })
+}
+
+function base64EnBlob(base64: string): Blob {
+  const octets = atob(base64)
+  const tableau = new Uint8Array(octets.length)
+  for (let i = 0; i < octets.length; i++) tableau[i] = octets.charCodeAt(i)
+  return new Blob([tableau], { type: 'image/png' })
+}
+
+export async function exporterConfiguration(): Promise<string> {
+  const [pictosBruts, sequences, activites, regles, pagesTLA, profils] = await Promise.all([
+    db.pictos.toArray(),
+    db.sequences.toArray(),
+    db.activites.toArray(),
+    db.regles.toArray(),
+    db.pagesTLA.toArray(),
+    db.profils.toArray(),
+  ])
+
+  const pictos: PictoExporte[] = await Promise.all(
+    pictosBruts.map(async ({ image, ...reste }) => ({ ...reste, imageBase64: await blobEnBase64(image) })),
+  )
+
+  const configuration: ConfigurationExportee = {
+    version: 1,
+    exporteLe: new Date().toISOString(),
+    pictos,
+    sequences,
+    activites,
+    regles,
+    pagesTLA,
+    profils,
+  }
+  return JSON.stringify(configuration, null, 1)
+}
+
+export type ResultatImport = { pictos: number; sequences: number; activites: number; regles: number; pagesTLA: number; profils: number }
+
+/** Fusionne (bulkPut, par id) sans rien effacer d'existant. */
+export async function importerConfiguration(json: string): Promise<ResultatImport> {
+  const donnees = JSON.parse(json) as ConfigurationExportee
+  if (donnees.version !== 1) throw new Error('Format de fichier non reconnu')
+
+  const pictos: Picto[] = donnees.pictos.map(({ imageBase64, ...reste }) => ({
+    ...reste,
+    image: base64EnBlob(imageBase64),
+  }))
+
+  await db.transaction(
+    'rw',
+    [db.pictos, db.sequences, db.activites, db.regles, db.pagesTLA, db.profils],
+    async () => {
+      if (pictos.length) await db.pictos.bulkPut(pictos)
+      if (donnees.sequences.length) await db.sequences.bulkPut(donnees.sequences)
+      if (donnees.activites.length) await db.activites.bulkPut(donnees.activites)
+      if (donnees.regles.length) await db.regles.bulkPut(donnees.regles)
+      if (donnees.pagesTLA.length) await db.pagesTLA.bulkPut(donnees.pagesTLA)
+      if (donnees.profils.length) await db.profils.bulkPut(donnees.profils)
+    },
+  )
+
+  return {
+    pictos: pictos.length,
+    sequences: donnees.sequences.length,
+    activites: donnees.activites.length,
+    regles: donnees.regles.length,
+    pagesTLA: donnees.pagesTLA.length,
+    profils: donnees.profils.length,
+  }
+}

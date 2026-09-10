@@ -20,16 +20,18 @@ function VignettePictoPage({ id, surRetrait }: { id: string; surRetrait: () => v
   }, [id])
   if (!picto) return null
   return (
-    <div style={{ position: 'relative' }}>
+    <div
+      className="pile"
+      style={{ gap: 4, background: 'var(--surface)', border: '1px solid var(--bordure)', padding: 4 }}
+    >
       <TuilePicto image={picto.image} libelle={picto.libelleAffiche} surAppui={() => {}} />
       <button
         type="button"
         className="bouton bouton--danger"
         onClick={surRetrait}
-        style={{ position: 'absolute', top: -8, right: -8, minHeight: 32, padding: '0 8px', fontSize: 14 }}
-        aria-label={`Retirer ${picto.libelleAffiche}`}
+        style={{ minHeight: 'var(--cible)', fontSize: 14 }}
       >
-        ✕
+        Retirer
       </button>
     </div>
   )

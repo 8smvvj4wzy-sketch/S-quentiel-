@@ -5,12 +5,14 @@ import {
   creneauEstFait,
   db,
   lireCochage,
+  listerRegles,
   picto as chargerPicto,
   sequence as chargerSequence,
 } from '../db'
 import { calculerEtats, jourActuel, type EtatCreneau } from '../lib/edt'
 import { useObjectUrl } from '../lib/useObjectUrl'
-import type { Activite, CreneauEDT, Picto, Profil as TypeProfil } from '../types'
+import type { Activite, CreneauEDT, Picto, Profil as TypeProfil, Regle } from '../types'
+import { RegleOverlay } from '../composants/RegleOverlay'
 
 type LigneEDT = { creneau: CreneauEDT; activite: Activite; etat: EtatCreneau }
 
@@ -84,6 +86,8 @@ export function Profil() {
   const { profilId } = useParams<{ profilId: string }>()
   const [profil, setProfil] = useState<TypeProfil | null | undefined>(undefined)
   const [lignes, setLignes] = useState<LigneEDT[] | null>(null)
+  const [reglesJournee, setReglesJournee] = useState<Regle[]>([])
+  const [regleOuverte, setRegleOuverte] = useState<string | null>(null)
   const naviguer = useNavigate()
 
   const recharger = useCallback(async () => {
@@ -91,6 +95,9 @@ export function Profil() {
     const p = (await db.profils.get(profilId)) ?? null
     setProfil(p)
     if (!p) return
+
+    const toutesLesRegles = await listerRegles()
+    setReglesJournee(toutesLesRegles.filter((r) => p.reglesJournee.includes(r.id)))
 
     const jour = jourActuel()
     const creneaux = [...p.edt[jour]].sort((a, b) => a.ordre - b.ordre)
@@ -129,6 +136,30 @@ export function Profil() {
         <h1 className="barre__titre">{profil ? profil.initiales : 'Profil introuvable'}</h1>
       </div>
 
+      {reglesJournee.length > 0 && (
+        <div
+          className="ligne"
+          style={{
+            padding: 'var(--pas)',
+            background: 'var(--surface)',
+            borderBottom: '2px solid var(--en-cours)',
+            flexWrap: 'wrap',
+          }}
+        >
+          {reglesJournee.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              className="bouton"
+              style={{ minHeight: 'var(--cible)', fontSize: 16 }}
+              onClick={() => setRegleOuverte(r.id)}
+            >
+              {r.texte}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="contenu pile">
         {!lignes || lignes.length === 0 ? (
           <div className="vide">
@@ -145,6 +176,8 @@ export function Profil() {
           ))
         )}
       </div>
+
+      {regleOuverte && <RegleOverlay regleId={regleOuverte} surFermeture={() => setRegleOuverte(null)} />}
     </div>
   )
 }

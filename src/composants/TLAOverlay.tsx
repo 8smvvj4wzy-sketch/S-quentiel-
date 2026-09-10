@@ -3,21 +3,13 @@ import { useLocation } from 'react-router-dom'
 import { creneauEtActivite, db, listerPagesTLA, pageTLA as chargerPageTLA, picto as chargerPicto } from '../db'
 import type { PageTLA, Picto, Profil } from '../types'
 import { useAppuiLong } from '../lib/useAppuiLong'
+import { creneauDepuisChemin } from '../lib/contexteActivite'
 import { useObjectUrl } from '../lib/useObjectUrl'
 import { parler } from '../lib/voix'
 
 type Props = {
   profilId: string
   surFermeture: () => void
-}
-
-/** Extrait l'id de créneau courant depuis l'URL, pour retrouver l'activité en cours. */
-function creneauDepuisChemin(pathname: string, search: string): string | undefined {
-  const viaCreneauEcran = pathname.match(/^\/profil\/[^/]+\/creneau\/([^/]+)/)
-  if (viaCreneauEcran) return viaCreneauEcran[1]
-  const viaSequentiel = pathname.match(/^\/profil\/[^/]+\/sequentiel\//)
-  if (viaSequentiel) return new URLSearchParams(search).get('creneau') ?? undefined
-  return undefined
 }
 
 function VignetteGrille({ picto, taille, surAppui }: { picto: Picto; taille: number; surAppui: () => void }) {

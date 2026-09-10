@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react'
-import { creerActivite, listerPagesTLA, listerSequences, modifierActivite, picto as chargerPicto } from '../db'
-import type { Activite, PageTLA, Picto, Sequence } from '../types'
+import {
+  creerActivite,
+  definirReglesActivite,
+  listerPagesTLA,
+  listerRegles,
+  listerSequences,
+  modifierActivite,
+  picto as chargerPicto,
+} from '../db'
+import type { Activite, PageTLA, Picto, Regle, Sequence } from '../types'
 import { ChoisirPictoModal } from './ChoisirPictoModal'
 import { TuilePicto } from './TuilePicto'
 
@@ -19,11 +27,14 @@ export function ActiviteFormModal({ activiteInitiale, surValidation, surFermetur
   const [sequences, setSequences] = useState<Sequence[]>([])
   const [tlaContexteId, setTlaContexteId] = useState(activiteInitiale?.tlaContexteId ?? '')
   const [pagesTLA, setPagesTLA] = useState<PageTLA[]>([])
+  const [regleIds, setRegleIds] = useState<string[]>(activiteInitiale?.regleIds ?? [])
+  const [regles, setRegles] = useState<Regle[]>([])
   const [choixPictoOuvert, setChoixPictoOuvert] = useState(false)
 
   useEffect(() => {
     void listerSequences().then(setSequences)
     void listerPagesTLA().then(setPagesTLA)
+    void listerRegles().then(setRegles)
   }, [])
 
   useEffect(() => {
@@ -40,9 +51,15 @@ export function ActiviteFormModal({ activiteInitiale, surValidation, surFermetur
       sequenceId: sequenceId || undefined,
       tlaContexteId: tlaContexteId || undefined,
     }
-    if (activiteInitiale) await modifierActivite(activiteInitiale.id, donnees)
-    else await creerActivite(donnees)
+    const id = activiteInitiale
+      ? await modifierActivite(activiteInitiale.id, donnees).then(() => activiteInitiale.id)
+      : await creerActivite(donnees).then((a) => a.id)
+    await definirReglesActivite(id, regleIds)
     surValidation()
+  }
+
+  function basculerRegle(id: string) {
+    setRegleIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
   }
 
   return (
@@ -122,6 +139,27 @@ export function ActiviteFormModal({ activiteInitiale, surValidation, surFermetur
             </option>
           ))}
         </select>
+
+        {regles.length > 0 && (
+          <>
+            <label className="etiquette">Règles rattachées (facultatif)</label>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} className="pile">
+              {regles.map((r) => (
+                <li key={r.id}>
+                  <label className="ligne" style={{ cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={regleIds.includes(r.id)}
+                      onChange={() => basculerRegle(r.id)}
+                      style={{ width: 24, height: 24 }}
+                    />
+                    {r.texte}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
         <div className="ligne" style={{ justifyContent: 'flex-end' }}>
           <button type="button" className="bouton" onClick={surFermeture}>

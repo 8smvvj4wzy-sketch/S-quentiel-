@@ -192,10 +192,21 @@ export function Educateur() {
         </section>
 
         <section className="pile">
-          <h2 style={{ fontSize: 22 }}>Reste à venir</h2>
+          <h2 style={{ fontSize: 22 }}>Règles</h2>
+          <Link to="/educateur/regles" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
+            Ouvrir la bibliothèque de règles
+          </Link>
           <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 18 }}>
-            Règles et export JSON arrivent avec le dernier lot.
+            Le rattachement à une activité se fait dans son formulaire ; le rattachement à la
+            journée d'un profil, dans son emploi du temps.
           </p>
+        </section>
+
+        <section className="pile">
+          <h2 style={{ fontSize: 22 }}>Configuration</h2>
+          <Link to="/educateur/export-import" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
+            Export / import de la configuration
+          </Link>
         </section>
       </div>
 

@@ -1,5 +1,5 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { BoutonFlottantTLA } from './composants/BoutonFlottantTLA'
+import { BoutonFlottantMenu } from './composants/BoutonFlottantMenu'
 import { CoinEducateur } from './composants/CoinEducateur'
 import { FournisseurVerrouillage, useVerrouillage } from './lib/verrouillage'
 import { Accueil } from './ecrans/Accueil'
@@ -11,9 +11,11 @@ import { ConstruireEDT } from './ecrans/ConstruireEDT'
 import { Educateur } from './ecrans/Educateur'
 import { EditeurPageTLA } from './ecrans/EditeurPageTLA'
 import { EditeurSequence } from './ecrans/EditeurSequence'
+import { ExportImport } from './ecrans/ExportImport'
 import { PagesTLA } from './ecrans/PagesTLA'
 import { Profil } from './ecrans/Profil'
 import { ReglagesVocaux } from './ecrans/ReglagesVocaux'
+import { Regles } from './ecrans/Regles'
 import { Sequences } from './ecrans/Sequences'
 import { VueCreneau } from './ecrans/VueCreneau'
 import { VueSequentiel } from './ecrans/VueSequentiel'
@@ -35,7 +37,7 @@ export default function App() {
     <FournisseurVerrouillage>
       <HashRouter>
         <CoinEducateur />
-        <BoutonFlottantTLA />
+        <BoutonFlottantMenu />
         <Routes>
           <Route path="/" element={<Accueil />} />
           <Route path="/profil/:profilId" element={<Profil />} />
@@ -119,6 +121,22 @@ export default function App() {
             element={
               <ReserveEducateur>
                 <ReglagesVocaux />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/regles"
+            element={
+              <ReserveEducateur>
+                <Regles />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/export-import"
+            element={
+              <ReserveEducateur>
+                <ExportImport />
               </ReserveEducateur>
             }
           />
