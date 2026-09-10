@@ -30,11 +30,11 @@ Cocher les cases au fur et à mesure.
 - [x] Remise à zéro et annulation depuis l'espace éducateur
 
 ## Lot 3 — Emploi du temps
-- [ ] Bibliothèque d'activités : nom, picto, séquence rattachée
-- [ ] Construction de l'EDT par profil et par jour de semaine
-- [ ] Vue jeune : créneaux, états passé / en cours / à venir
-- [ ] Navigation créneau → séquentiel, et retour
-- [ ] Activité sans séquence : vue plein écran du picto
+- [x] Bibliothèque d'activités : nom, picto, séquence rattachée
+- [x] Construction de l'EDT par profil et par jour de semaine
+- [x] Vue jeune : créneaux, états passé / en cours / à venir
+- [x] Navigation créneau → séquentiel, et retour
+- [x] Activité sans séquence : vue plein écran du picto
 
 ## Lot 4 — TLA et vocal
 - [ ] Configuration de la grille par profil (3×2 à 8×6)

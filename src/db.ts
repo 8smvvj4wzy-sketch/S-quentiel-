@@ -1,10 +1,13 @@
 import Dexie, { type Table } from 'dexie'
 import {
   edtVide,
+  JOURS_SEMAINE,
   LIMITES,
   type Activite,
+  type CreneauEDT,
   type Etape,
   type EtatCochage,
+  type JourSemaine,
   type PageTLA,
   type Picto,
   type Profil,
@@ -402,4 +405,138 @@ export async function reinitialiserCochagesProfil(profilId: string): Promise<voi
 /** Remise à zéro de tous les cochages, tous profils confondus. */
 export async function reinitialiserTousLesCochages(): Promise<void> {
   await db.cochages.clear()
+}
+
+/* --- Activités --------------------------------------------------------- */
+
+export async function listerActivites(): Promise<Activite[]> {
+  const activites = await db.activites.toArray()
+  return activites.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
+}
+
+export async function activite(id: string): Promise<Activite | undefined> {
+  return db.activites.get(id)
+}
+
+export async function creerActivite(donnees: {
+  nom: string
+  pictoId: string
+  sequenceId?: string
+}): Promise<Activite> {
+  const nouvelle: Activite = {
+    id: nouvelId('activite'),
+    nom: donnees.nom.trim() || 'Activité',
+    pictoId: donnees.pictoId,
+    sequenceId: donnees.sequenceId,
+    regleIds: [],
+  }
+  await db.activites.add(nouvelle)
+  return nouvelle
+}
+
+export async function modifierActivite(
+  id: string,
+  patch: Partial<Pick<Activite, 'nom' | 'pictoId' | 'sequenceId'>>,
+): Promise<void> {
+  await db.activites.update(id, patch)
+}
+
+/** Reste à vérifier l'usage dans un EDT une fois que ce lien sera consulté
+ *  systématiquement (l'EDT référence l'activité par id ; un créneau orphelin
+ *  est simplement ignoré à l'affichage). */
+export async function supprimerActivite(id: string): Promise<void> {
+  await db.activites.delete(id)
+}
+
+/* --- Emploi du temps -----------------------------------------------------
+ * Propre à chaque profil (SPEC §2). Stocké directement sur le Profil,
+ * `edt: Record<JourSemaine, CreneauEDT[]>`.
+ */
+
+export async function ajouterCreneau(
+  profilId: string,
+  jour: JourSemaine,
+  activiteId: string,
+  heureDebut?: string,
+): Promise<void> {
+  const profil = await db.profils.get(profilId)
+  if (!profil) throw new Error('Profil introuvable')
+  const jourCreneaux = profil.edt[jour]
+  const creneau: CreneauEDT = {
+    id: nouvelId('creneau'),
+    activiteId,
+    heureDebut,
+    ordre: jourCreneaux.length,
+  }
+  await db.profils.update(profilId, { edt: { ...profil.edt, [jour]: [...jourCreneaux, creneau] } })
+}
+
+export async function supprimerCreneau(
+  profilId: string,
+  jour: JourSemaine,
+  creneauId: string,
+): Promise<void> {
+  const profil = await db.profils.get(profilId)
+  if (!profil) throw new Error('Profil introuvable')
+  const restants = profil.edt[jour].filter((c) => c.id !== creneauId).map((c, i) => ({ ...c, ordre: i }))
+  await db.profils.update(profilId, { edt: { ...profil.edt, [jour]: restants } })
+}
+
+/** Remplace l'ordre complet des créneaux d'un jour (glisser-déposer). */
+export async function reordonnerCreneaux(
+  profilId: string,
+  jour: JourSemaine,
+  creneaux: CreneauEDT[],
+): Promise<void> {
+  const profil = await db.profils.get(profilId)
+  if (!profil) throw new Error('Profil introuvable')
+  const reordonnes = creneaux.map((c, i) => ({ ...c, ordre: i }))
+  await db.profils.update(profilId, { edt: { ...profil.edt, [jour]: reordonnes } })
+}
+
+export async function modifierHeureCreneau(
+  profilId: string,
+  jour: JourSemaine,
+  creneauId: string,
+  heureDebut: string | undefined,
+): Promise<void> {
+  const profil = await db.profils.get(profilId)
+  if (!profil) throw new Error('Profil introuvable')
+  const jourCreneaux = profil.edt[jour].map((c) => (c.id === creneauId ? { ...c, heureDebut } : c))
+  await db.profils.update(profilId, { edt: { ...profil.edt, [jour]: jourCreneaux } })
+}
+
+/** Retrouve un créneau (et son activité) sans connaître son jour à l'avance. */
+export async function creneauEtActivite(
+  profilId: string,
+  creneauId: string,
+): Promise<{ jour: JourSemaine; creneau: CreneauEDT; activite: Activite } | undefined> {
+  const profil = await db.profils.get(profilId)
+  if (!profil) return undefined
+  for (const jour of JOURS_SEMAINE) {
+    const creneau = profil.edt[jour].find((c) => c.id === creneauId)
+    if (creneau) {
+      const act = await db.activites.get(creneau.activiteId)
+      if (!act) return undefined
+      return { jour, creneau, activite: act }
+    }
+  }
+  return undefined
+}
+
+/**
+ * Marque comme faite une activité sans séquence (SPEC §4.2, « vue plein
+ * écran du picto »). Réutilise le mécanisme de cochage avec une étape
+ * sentinelle : ces activités n'ont pas d'étapes à proprement parler, mais
+ * ont tout de même besoin d'un signal « fait » pour l'état du créneau.
+ */
+const ETAPE_SENTINELLE = 'vu'
+
+export async function marquerCreneauFait(profilId: string, creneauId: string): Promise<void> {
+  await cocherEtape(profilId, creneauId, ETAPE_SENTINELLE)
+}
+
+export async function creneauEstFait(profilId: string, creneauId: string): Promise<boolean> {
+  const cochage = await lireCochage(profilId, creneauId)
+  return Boolean(cochage?.etapesFaites.length)
 }

@@ -2,12 +2,15 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { CoinEducateur } from './composants/CoinEducateur'
 import { FournisseurVerrouillage, useVerrouillage } from './lib/verrouillage'
 import { Accueil } from './ecrans/Accueil'
+import { Activites } from './ecrans/Activites'
 import { APropos } from './ecrans/APropos'
 import { Bibliotheque } from './ecrans/Bibliotheque'
+import { ConstruireEDT } from './ecrans/ConstruireEDT'
 import { Educateur } from './ecrans/Educateur'
 import { EditeurSequence } from './ecrans/EditeurSequence'
 import { Profil } from './ecrans/Profil'
 import { Sequences } from './ecrans/Sequences'
+import { VueCreneau } from './ecrans/VueCreneau'
 import { VueSequentiel } from './ecrans/VueSequentiel'
 import type { JSX } from 'react'
 
@@ -31,6 +34,7 @@ export default function App() {
           <Route path="/" element={<Accueil />} />
           <Route path="/profil/:profilId" element={<Profil />} />
           <Route path="/profil/:profilId/sequentiel/:sequenceId" element={<VueSequentiel />} />
+          <Route path="/profil/:profilId/creneau/:creneauId" element={<VueCreneau />} />
           <Route path="/a-propos" element={<APropos />} />
           <Route
             path="/educateur"
@@ -61,6 +65,22 @@ export default function App() {
             element={
               <ReserveEducateur>
                 <EditeurSequence />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/activites"
+            element={
+              <ReserveEducateur>
+                <Activites />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/profils/:profilId/edt"
+            element={
+              <ReserveEducateur>
+                <ConstruireEDT />
               </ReserveEducateur>
             }
           />
