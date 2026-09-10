@@ -10,6 +10,7 @@ import {
 } from '../db'
 import type { Activite, PageTLA, Picto, Regle, Sequence } from '../types'
 import { ChoisirPictoModal } from './ChoisirPictoModal'
+import { SuggestionsPicto } from './SuggestionsPicto'
 import { TuilePicto } from './TuilePicto'
 
 type Props = {
@@ -95,6 +96,15 @@ export function ActiviteFormModal({ activiteInitiale, surValidation, surFermetur
           Nom
         </label>
         <input id="nom-activite" className="champ" value={nom} placeholder="Ex. : Goûter" onChange={(e) => setNom(e.target.value)} />
+
+        <SuggestionsPicto
+          libelle={nom}
+          pictoRetenuId={pictoId}
+          surChoix={(p) => {
+            setPictoId(p.id)
+            setPictoChoisi(p)
+          }}
+        />
 
         <div className="ligne">
           {pictoChoisi ? (

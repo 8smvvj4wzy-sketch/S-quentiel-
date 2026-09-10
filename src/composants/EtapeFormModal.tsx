@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { picto as chargerPicto } from '../db'
 import type { Etape, Picto } from '../types'
 import { ChoisirPictoModal } from './ChoisirPictoModal'
+import { SuggestionsPicto } from './SuggestionsPicto'
 import { TuilePicto } from './TuilePicto'
 
 type Props = {
@@ -52,6 +53,26 @@ export function EtapeFormModal({ etapeInitiale, surValidation, surFermeture }: P
       >
         <h2 style={{ fontSize: 22 }}>{etapeInitiale ? "Modifier l'étape" : 'Ajouter une étape'}</h2>
 
+        <label className="etiquette" htmlFor="texte-etape">
+          Texte (facultatif si un picto est choisi)
+        </label>
+        <input
+          id="texte-etape"
+          className="champ"
+          value={texte}
+          placeholder="Ex. : Ranger la vaisselle"
+          onChange={(e) => setTexte(e.target.value)}
+        />
+
+        <SuggestionsPicto
+          libelle={texte}
+          pictoRetenuId={pictoId}
+          surChoix={(p) => {
+            setPictoId(p.id)
+            setPictoChoisi(p)
+          }}
+        />
+
         <div className="ligne">
           {pictoChoisi ? (
             <TuilePicto image={pictoChoisi.image} libelle={pictoChoisi.libelleAffiche} surAppui={() => setChoixPictoOuvert(true)} />
@@ -73,17 +94,6 @@ export function EtapeFormModal({ etapeInitiale, surValidation, surFermeture }: P
             </button>
           )}
         </div>
-
-        <label className="etiquette" htmlFor="texte-etape">
-          Texte (facultatif si un picto est choisi)
-        </label>
-        <input
-          id="texte-etape"
-          className="champ"
-          value={texte}
-          placeholder="Ex. : Ranger la vaisselle"
-          onChange={(e) => setTexte(e.target.value)}
-        />
 
         <div className="ligne" style={{ justifyContent: 'flex-end' }}>
           <button type="button" className="bouton" onClick={surFermeture}>

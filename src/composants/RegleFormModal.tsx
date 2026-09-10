@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { creerRegle, modifierRegle, picto as chargerPicto } from '../db'
 import type { Picto, Regle } from '../types'
 import { ChoisirPictoModal } from './ChoisirPictoModal'
+import { SuggestionsPicto } from './SuggestionsPicto'
 import { TuilePicto } from './TuilePicto'
 
 type Props = {
@@ -68,6 +69,15 @@ export function RegleFormModal({ regleInitiale, surValidation, surFermeture }: P
           value={texte}
           placeholder="Ex. : On chuchote dans le couloir"
           onChange={(e) => setTexte(e.target.value)}
+        />
+
+        <SuggestionsPicto
+          libelle={texte}
+          pictoRetenuId={pictoId}
+          surChoix={(p) => {
+            setPictoId(p.id)
+            setPictoChoisi(p)
+          }}
         />
 
         <div className="ligne">
