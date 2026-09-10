@@ -12,6 +12,10 @@ import {
   type Sequence,
 } from './types'
 import { nouvelId } from './lib/id'
+import { urlImageCatalogue, type EntreeCatalogue } from './lib/arasaac'
+import { normaliser } from './lib/texte'
+import type { DispositionComposite } from './lib/image'
+import { genererComposite } from './lib/image'
 
 /**
  * Toutes les données restent dans la tablette (SPEC : pas de backend, pas de
@@ -125,4 +129,140 @@ export async function supprimerProfil(id: string): Promise<void> {
     await db.cochages.where('profilId').equals(id).delete()
     await db.profils.delete(id)
   })
+}
+
+/* --- Pictos -------------------------------------------------------------
+ * Pictos, séquences, activités, règles et pages TLA sont communs à
+ * l'établissement (SPEC §2, « Portée des données »).
+ */
+
+export async function listerPictos(): Promise<Picto[]> {
+  const pictos = await db.pictos.toArray()
+  return pictos.sort((a, b) => a.libelleAffiche.localeCompare(b.libelleAffiche, 'fr'))
+}
+
+export async function rechercherPictosLocaux(recherche: string): Promise<Picto[]> {
+  const q = normaliser(recherche.trim())
+  const pictos = await listerPictos()
+  if (!q) return pictos
+  return pictos.filter(
+    (p) => normaliser(p.libelleAffiche).includes(q) || p.tags.some((t) => normaliser(t).includes(q)),
+  )
+}
+
+export async function picto(id: string): Promise<Picto | undefined> {
+  return db.pictos.get(id)
+}
+
+/** id déterministe pour un picto du catalogue : « obtenir » deux fois la
+ *  même entrée renvoie donc toujours le même Picto, pas un doublon. */
+function idPictoArasaac(idCatalogue: string): string {
+  return `arasaac-${idCatalogue}`
+}
+
+/**
+ * « Obtient » un picto du catalogue ARASAAC embarqué (SPEC §3.1) : copie son
+ * image en Blob dans Dexie, pour que le picto vive ensuite comme n'importe
+ * quel autre, indépendamment du fichier statique d'origine.
+ */
+export async function obtenirPictoCatalogue(entree: EntreeCatalogue): Promise<Picto> {
+  const id = idPictoArasaac(entree.id)
+  const existant = await db.pictos.get(id)
+  if (existant) return existant
+
+  const reponse = await fetch(urlImageCatalogue(entree.id))
+  if (!reponse.ok) throw new Error(`Image introuvable pour le picto ${entree.id}`)
+  const image = await reponse.blob()
+
+  const nouveau: Picto = {
+    id,
+    source: 'arasaac',
+    image,
+    libelleAffiche: entree.libelle,
+    libelleParle: entree.libelle,
+    tags: [...new Set([entree.libelle, ...entree.tags])],
+  }
+  await db.pictos.add(nouveau)
+  return nouveau
+}
+
+export async function creerPictoDepuisPhoto(image: Blob, libelle: string): Promise<Picto> {
+  const nouveau: Picto = {
+    id: nouvelId('picto'),
+    source: 'photo',
+    image,
+    libelleAffiche: libelle,
+    libelleParle: libelle,
+    tags: libelle ? [libelle] : [],
+  }
+  await db.pictos.add(nouveau)
+  return nouveau
+}
+
+/** Compose 2 à 4 pictos existants en un nouveau picto (SPEC §3.3). */
+export async function creerPictoComposite(
+  idsParties: string[],
+  disposition: DispositionComposite,
+  libelle: string,
+): Promise<Picto> {
+  const parties = await db.pictos.bulkGet(idsParties)
+  const manquant = parties.findIndex((p) => !p)
+  if (manquant !== -1) throw new Error(`Picto introuvable : ${idsParties[manquant]}`)
+
+  const image = await genererComposite(
+    parties.map((p) => p!.image),
+    disposition,
+  )
+
+  const nouveau: Picto = {
+    id: nouvelId('picto'),
+    source: 'composite',
+    image,
+    parts: idsParties,
+    libelleAffiche: libelle,
+    libelleParle: libelle,
+    tags: libelle ? [libelle] : [],
+  }
+  await db.pictos.add(nouveau)
+  return nouveau
+}
+
+export async function modifierLibellesPicto(
+  id: string,
+  libelleAffiche: string,
+  libelleParle: string,
+): Promise<void> {
+  await db.pictos.update(id, { libelleAffiche, libelleParle })
+}
+
+export async function supprimerPicto(id: string): Promise<void> {
+  // Remarque : aucune vérification d'usage pour l'instant, car rien ne
+  // référence encore un pictoId (séquences, activités et TLA arrivent aux
+  // lots suivants). À réintroduire quand ces lots existeront.
+  await db.pictos.delete(id)
+}
+
+/**
+ * Importe un pack ARASAAC complémentaire depuis un fichier ZIP (SPEC §3.1).
+ * Format attendu : des images (png/jpg) à la racine ou dans un dossier du
+ * zip, nommées par un identifiant ; le nom de fichier sans extension sert de
+ * libellé par défaut (remplaçable ensuite comme tout picto).
+ */
+export async function importerPictosDepuisZip(
+  fichiers: { nom: string; contenu: Blob }[],
+): Promise<{ importes: number; ignores: number }> {
+  let importes = 0
+  let ignores = 0
+  for (const { nom, contenu } of fichiers) {
+    const segments = nom.split('/')
+    const nomFichier = segments[segments.length - 1]
+    const libelle = nomFichier.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim()
+    if (!libelle) {
+      ignores++
+      continue
+    }
+    await creerPictoDepuisPhoto(contenu, libelle)
+    importes++
+  }
+  return { importes, ignores }
 }
