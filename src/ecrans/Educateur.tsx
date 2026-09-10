@@ -125,6 +125,9 @@ export function Educateur() {
                 >
                   <span style={{ fontWeight: 700 }}>{profil.initiales}</span>
                   <span className="ligne">
+                    <Link to={`/educateur/profils/${profil.id}/edt`} className="bouton" style={{ textDecoration: 'none' }}>
+                      Emploi du temps
+                    </Link>
                     <button type="button" className="bouton" onClick={() => void renommer(profil)}>
                       Renommer
                     </button>
@@ -153,10 +156,15 @@ export function Educateur() {
         </section>
 
         <section className="pile">
-          <h2 style={{ fontSize: 22 }}>Séquences</h2>
-          <Link to="/educateur/sequences" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
-            Ouvrir la bibliothèque de séquences
-          </Link>
+          <h2 style={{ fontSize: 22 }}>Séquences et activités</h2>
+          <div className="ligne">
+            <Link to="/educateur/sequences" className="bouton" style={{ textDecoration: 'none' }}>
+              Ouvrir la bibliothèque de séquences
+            </Link>
+            <Link to="/educateur/activites" className="bouton" style={{ textDecoration: 'none' }}>
+              Ouvrir la bibliothèque d'activités
+            </Link>
+          </div>
         </section>
 
         <section className="pile">
@@ -169,8 +177,8 @@ export function Educateur() {
         <section className="pile">
           <h2 style={{ fontSize: 22 }}>Reste à venir</h2>
           <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 18 }}>
-            Activités et règles, emploi du temps, configuration du TLA, réglages vocaux et
-            export JSON arrivent avec les lots suivants.
+            Règles, configuration du TLA, réglages vocaux et export JSON arrivent avec les lots
+            suivants.
           </p>
         </section>
       </div>
