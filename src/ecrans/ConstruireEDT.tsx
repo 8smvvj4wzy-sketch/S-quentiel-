@@ -12,6 +12,7 @@ import {
 } from '../db'
 import { JOURS_SEMAINE, type Activite, type CreneauEDT, type JourSemaine, type Profil, type Regle } from '../types'
 import { ChoisirActiviteModal } from '../composants/ChoisirActiviteModal'
+import { jourActuel } from '../lib/edt'
 import { useGlisserDeposer } from '../lib/useGlisserDeposer'
 
 const LIBELLES_JOUR: Record<JourSemaine, string> = {
@@ -76,7 +77,10 @@ function LigneCreneau({
 export function ConstruireEDT() {
   const { profilId } = useParams<{ profilId: string }>()
   const [profil, setProfil] = useState<Profil | null | undefined>(undefined)
-  const [jour, setJour] = useState<JourSemaine>('lundi')
+  // Le jour du jour, pas lundi : la vue jeune lit edt[jourActuel()], donc
+  // partir sur lundi rangeait silencieusement les créneaux dans un jour que
+  // personne ne regardait.
+  const [jour, setJour] = useState<JourSemaine>(jourActuel())
   const [choixActiviteOuvert, setChoixActiviteOuvert] = useState(false)
   const [regles, setRegles] = useState<Regle[]>([])
 

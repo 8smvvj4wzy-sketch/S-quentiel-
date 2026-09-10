@@ -17,17 +17,20 @@ export default defineConfig({
         // Précache complet : tout doit être disponible hors ligne, y compris
         // les pictogrammes embarqués et les polices.
         globPatterns: ['**/*.{js,css,html,png,svg,woff,woff2,json}'],
-        // Décision lot 1 : le pack ARASAAC (1499 images, ~16 Mo) reste hors du
-        // précache d'installation. Le premier déploiement avec le pack a
-        // d'ailleurs expiré côté GitHub Pages en tentant de tout traiter
-        // d'un coup — un signal concret que ce volume ne doit pas peser sur
-        // l'installation de l'app. À la place, chaque image du catalogue est
-        // mise en cache dès qu'elle est vue une première fois (runtimeCaching
-        // ci-dessous), puis y reste indéfiniment : un éducateur qui prépare
-        // la bibliothèque avec le wifi de l'établissement rend ces pictos
-        // disponibles pour l'usage hors ligne qui suit, sans gonfler le
-        // service worker pour des images jamais utilisées par ce profil.
-        globIgnores: ['pack-arasaac/**'],
+        // Décision lot 1, confirmée au lot 6 : les images du pack ARASAAC
+        // (désormais ~13 800, ~115 Mo) restent hors du précache
+        // d'installation. Le premier déploiement avec le pack avait déjà
+        // expiré côté GitHub Pages en tentant de tout traiter d'un coup — ce
+        // volume ne doit pas peser sur l'installation. À la place, chaque
+        // image est mise en cache dès qu'elle est vue une première fois
+        // (runtimeCaching ci-dessous), puis y reste : un éducateur qui
+        // prépare la bibliothèque avec le wifi de l'établissement rend ces
+        // pictos disponibles pour l'usage hors ligne qui suit.
+        //
+        // index.json, lui, est bien précaché : il ne pèse que ~1 Mo et sans
+        // lui la recherche ne renvoie rien à la première ouverture hors
+        // ligne. D'où l'exclusion limitée aux seules images.
+        globIgnores: ['pack-arasaac/*.webp', 'pack-arasaac/*.png'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: BASE + 'index.html',
         cleanupOutdatedCaches: true,
@@ -37,7 +40,9 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'pack-arasaac',
-              expiration: { maxEntries: 2000 },
+              // Au-delà du nombre d'images du pack, sinon le cache évince
+              // des pictos déjà consultés et ils manquent hors ligne.
+              expiration: { maxEntries: 20000 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
