@@ -32,6 +32,7 @@ export function useGlisserDeposer<T extends { id: string }>(
 
   function poignee(id: string) {
     return {
+      ref: (el: HTMLElement | null) => enregistrerLigne(id, el),
       onPointerDown: (e: React.PointerEvent) => {
         e.preventDefault()
         setIdEnGlisse(id)
@@ -64,5 +65,5 @@ export function useGlisserDeposer<T extends { id: string }>(
     }
   }
 
-  return { liste, poignee, enregistrerLigne, idEnGlisse }
+  return { liste, poignee, idEnGlisse }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { creerActivite, listerSequences, modifierActivite, picto as chargerPicto } from '../db'
-import type { Activite, Picto, Sequence } from '../types'
+import { creerActivite, listerPagesTLA, listerSequences, modifierActivite, picto as chargerPicto } from '../db'
+import type { Activite, PageTLA, Picto, Sequence } from '../types'
 import { ChoisirPictoModal } from './ChoisirPictoModal'
 import { TuilePicto } from './TuilePicto'
 
@@ -17,10 +17,13 @@ export function ActiviteFormModal({ activiteInitiale, surValidation, surFermetur
   const [pictoChoisi, setPictoChoisi] = useState<Picto | null>(null)
   const [sequenceId, setSequenceId] = useState(activiteInitiale?.sequenceId ?? '')
   const [sequences, setSequences] = useState<Sequence[]>([])
+  const [tlaContexteId, setTlaContexteId] = useState(activiteInitiale?.tlaContexteId ?? '')
+  const [pagesTLA, setPagesTLA] = useState<PageTLA[]>([])
   const [choixPictoOuvert, setChoixPictoOuvert] = useState(false)
 
   useEffect(() => {
     void listerSequences().then(setSequences)
+    void listerPagesTLA().then(setPagesTLA)
   }, [])
 
   useEffect(() => {
@@ -31,7 +34,12 @@ export function ActiviteFormModal({ activiteInitiale, surValidation, surFermetur
 
   async function valider() {
     if (!pictoId) return
-    const donnees = { nom: nom.trim(), pictoId, sequenceId: sequenceId || undefined }
+    const donnees = {
+      nom: nom.trim(),
+      pictoId,
+      sequenceId: sequenceId || undefined,
+      tlaContexteId: tlaContexteId || undefined,
+    }
     if (activiteInitiale) await modifierActivite(activiteInitiale.id, donnees)
     else await creerActivite(donnees)
     surValidation()
@@ -94,6 +102,23 @@ export function ActiviteFormModal({ activiteInitiale, surValidation, surFermetur
           {sequences.map((s) => (
             <option key={s.id} value={s.id}>
               {s.nom}
+            </option>
+          ))}
+        </select>
+
+        <label className="etiquette" htmlFor="tla-activite">
+          Page TLA rattachée (facultatif)
+        </label>
+        <select
+          id="tla-activite"
+          className="champ"
+          value={tlaContexteId}
+          onChange={(e) => setTlaContexteId(e.target.value)}
+        >
+          <option value="">Aucune — le TLA garde la page choisie par défaut</option>
+          {pagesTLA.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.nom}
             </option>
           ))}
         </select>

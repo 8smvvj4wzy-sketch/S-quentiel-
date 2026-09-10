@@ -422,12 +422,14 @@ export async function creerActivite(donnees: {
   nom: string
   pictoId: string
   sequenceId?: string
+  tlaContexteId?: string
 }): Promise<Activite> {
   const nouvelle: Activite = {
     id: nouvelId('activite'),
     nom: donnees.nom.trim() || 'Activité',
     pictoId: donnees.pictoId,
     sequenceId: donnees.sequenceId,
+    tlaContexteId: donnees.tlaContexteId,
     regleIds: [],
   }
   await db.activites.add(nouvelle)
@@ -436,7 +438,7 @@ export async function creerActivite(donnees: {
 
 export async function modifierActivite(
   id: string,
-  patch: Partial<Pick<Activite, 'nom' | 'pictoId' | 'sequenceId'>>,
+  patch: Partial<Pick<Activite, 'nom' | 'pictoId' | 'sequenceId' | 'tlaContexteId'>>,
 ): Promise<void> {
   await db.activites.update(id, patch)
 }
@@ -539,4 +541,69 @@ export async function marquerCreneauFait(profilId: string, creneauId: string): P
 export async function creneauEstFait(profilId: string, creneauId: string): Promise<boolean> {
   const cochage = await lireCochage(profilId, creneauId)
   return Boolean(cochage?.etapesFaites.length)
+}
+
+/* --- Pages TLA -----------------------------------------------------------
+ * Communes à l'établissement (SPEC §2). Chaque profil choisit sa page
+ * noyau et ses pages contextuelles parmi celles-ci (voir ci-dessous).
+ */
+
+export async function listerPagesTLA(): Promise<PageTLA[]> {
+  const pages = await db.pagesTLA.toArray()
+  return pages.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
+}
+
+export async function pageTLA(id: string): Promise<PageTLA | undefined> {
+  return db.pagesTLA.get(id)
+}
+
+export async function creerPageTLA(nom: string): Promise<PageTLA> {
+  const nouvelle: PageTLA = { id: nouvelId('pageTLA'), nom: nom.trim() || 'Page TLA', pictoIds: [] }
+  await db.pagesTLA.add(nouvelle)
+  return nouvelle
+}
+
+export async function renommerPageTLA(id: string, nom: string): Promise<void> {
+  await db.pagesTLA.update(id, { nom: nom.trim() || 'Page TLA' })
+}
+
+export async function supprimerPageTLA(id: string): Promise<void> {
+  await db.pagesTLA.delete(id)
+}
+
+export async function ajouterPictoAPage(pageId: string, pictoId: string): Promise<void> {
+  const page = await db.pagesTLA.get(pageId)
+  if (!page || page.pictoIds.includes(pictoId)) return
+  await db.pagesTLA.update(pageId, { pictoIds: [...page.pictoIds, pictoId] })
+}
+
+export async function retirerPictoDePage(pageId: string, pictoId: string): Promise<void> {
+  const page = await db.pagesTLA.get(pageId)
+  if (!page) return
+  await db.pagesTLA.update(pageId, { pictoIds: page.pictoIds.filter((id) => id !== pictoId) })
+}
+
+export async function reordonnerPictosPage(pageId: string, pictoIds: string[]): Promise<void> {
+  await db.pagesTLA.update(pageId, { pictoIds })
+}
+
+/* --- Configuration TLA et vocale par profil ----------------------------- */
+
+export async function definirGrilleTLA(profilId: string, colonnes: number, lignes: number): Promise<void> {
+  await db.profils.update(profilId, { grilleTLA: { colonnes, lignes } })
+}
+
+export async function definirPageNoyau(profilId: string, pageId: string): Promise<void> {
+  await db.profils.update(profilId, { pageTLAnoyau: pageId })
+}
+
+export async function definirPagesContextuelles(profilId: string, pageIds: string[]): Promise<void> {
+  await db.profils.update(profilId, { pagesTLA: pageIds })
+}
+
+export async function modifierReglagesVocaux(
+  profilId: string,
+  vocal: Profil['vocal'],
+): Promise<void> {
+  await db.profils.update(profilId, { vocal })
 }

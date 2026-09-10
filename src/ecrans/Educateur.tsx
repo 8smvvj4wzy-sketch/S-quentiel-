@@ -128,6 +128,12 @@ export function Educateur() {
                     <Link to={`/educateur/profils/${profil.id}/edt`} className="bouton" style={{ textDecoration: 'none' }}>
                       Emploi du temps
                     </Link>
+                    <Link to={`/educateur/profils/${profil.id}/tla`} className="bouton" style={{ textDecoration: 'none' }}>
+                      TLA
+                    </Link>
+                    <Link to={`/educateur/profils/${profil.id}/vocal`} className="bouton" style={{ textDecoration: 'none' }}>
+                      Voix
+                    </Link>
                     <button type="button" className="bouton" onClick={() => void renommer(profil)}>
                       Renommer
                     </button>
@@ -168,6 +174,17 @@ export function Educateur() {
         </section>
 
         <section className="pile">
+          <h2 style={{ fontSize: 22 }}>Tableau de communication (TLA)</h2>
+          <Link to="/educateur/tla" className="bouton" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', width: 'fit-content' }}>
+            Ouvrir les pages du TLA
+          </Link>
+          <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 18 }}>
+            La taille de la grille, la page noyau et les réglages vocaux se configurent par
+            profil, avec les boutons « TLA » et « Voix » ci-dessus.
+          </p>
+        </section>
+
+        <section className="pile">
           <h2 style={{ fontSize: 22 }}>Cochages</h2>
           <button type="button" className="bouton bouton--danger" style={{ width: 'fit-content' }} onClick={() => setAReinitialiser('tout')}>
             Réinitialiser tous les cochages (tous les profils)
@@ -177,8 +194,7 @@ export function Educateur() {
         <section className="pile">
           <h2 style={{ fontSize: 22 }}>Reste à venir</h2>
           <p style={{ margin: 0, color: 'var(--texte-secondaire)', fontSize: 18 }}>
-            Règles, configuration du TLA, réglages vocaux et export JSON arrivent avec les lots
-            suivants.
+            Règles et export JSON arrivent avec le dernier lot.
           </p>
         </section>
       </div>

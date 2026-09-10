@@ -1,14 +1,19 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BoutonFlottantTLA } from './composants/BoutonFlottantTLA'
 import { CoinEducateur } from './composants/CoinEducateur'
 import { FournisseurVerrouillage, useVerrouillage } from './lib/verrouillage'
 import { Accueil } from './ecrans/Accueil'
 import { Activites } from './ecrans/Activites'
 import { APropos } from './ecrans/APropos'
 import { Bibliotheque } from './ecrans/Bibliotheque'
+import { ConfigurationTLA } from './ecrans/ConfigurationTLA'
 import { ConstruireEDT } from './ecrans/ConstruireEDT'
 import { Educateur } from './ecrans/Educateur'
+import { EditeurPageTLA } from './ecrans/EditeurPageTLA'
 import { EditeurSequence } from './ecrans/EditeurSequence'
+import { PagesTLA } from './ecrans/PagesTLA'
 import { Profil } from './ecrans/Profil'
+import { ReglagesVocaux } from './ecrans/ReglagesVocaux'
 import { Sequences } from './ecrans/Sequences'
 import { VueCreneau } from './ecrans/VueCreneau'
 import { VueSequentiel } from './ecrans/VueSequentiel'
@@ -30,6 +35,7 @@ export default function App() {
     <FournisseurVerrouillage>
       <HashRouter>
         <CoinEducateur />
+        <BoutonFlottantTLA />
         <Routes>
           <Route path="/" element={<Accueil />} />
           <Route path="/profil/:profilId" element={<Profil />} />
@@ -81,6 +87,38 @@ export default function App() {
             element={
               <ReserveEducateur>
                 <ConstruireEDT />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/tla"
+            element={
+              <ReserveEducateur>
+                <PagesTLA />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/tla/:pageId"
+            element={
+              <ReserveEducateur>
+                <EditeurPageTLA />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/profils/:profilId/tla"
+            element={
+              <ReserveEducateur>
+                <ConfigurationTLA />
+              </ReserveEducateur>
+            }
+          />
+          <Route
+            path="/educateur/profils/:profilId/vocal"
+            element={
+              <ReserveEducateur>
+                <ReglagesVocaux />
               </ReserveEducateur>
             }
           />
