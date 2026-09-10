@@ -46,9 +46,9 @@ Cocher les cases au fur et à mesure.
 - [x] Bouton « Tester la voix » et avertissement si aucune voix française
 
 ## Lot 5 — Règles et finitions
-- [ ] Bibliothèque de règles, rattachement activité et journée
-- [ ] Affichage plein écran et bandeau de journée
-- [ ] Export / import de la configuration en JSON
-- [ ] Écran « À propos » avec l'attribution ARASAAC obligatoire
-- [ ] Passe d'accessibilité : contrastes, tailles tactiles, `prefers-reduced-motion`
-- [ ] Relecture des textes d'interface (registre jeune / registre éducateur)
+- [x] Bibliothèque de règles, rattachement activité et journée
+- [x] Affichage plein écran et bandeau de journée
+- [x] Export / import de la configuration en JSON
+- [x] Écran « À propos » avec l'attribution ARASAAC obligatoire
+- [x] Passe d'accessibilité : contrastes, tailles tactiles, `prefers-reduced-motion`
+- [x] Relecture des textes d'interface (registre jeune / registre éducateur)
