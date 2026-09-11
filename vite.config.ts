@@ -11,7 +11,14 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      // Enregistrement fait à la main dans main.tsx : le script auto-injecté
+      // ('auto') se contente d'un register() une fois au chargement, sans
+      // revérifier tant que l'onglet reste ouvert — sur une tablette
+      // d'atelier qui ne recharge jamais, une mise à jour publiée pouvait
+      // ne jamais être vue. virtual:pwa-register gère en plus le
+      // rechargement automatique dès qu'un nouveau service worker prend la
+      // main, et permet une revérification périodique.
+      injectRegister: false,
       includeAssets: ['icone-192.png', 'icone-512.png', 'icone-maskable-512.png'],
       workbox: {
         // Précache complet : tout doit être disponible hors ligne, y compris
