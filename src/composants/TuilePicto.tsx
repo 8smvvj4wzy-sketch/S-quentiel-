@@ -25,7 +25,10 @@ export function TuilePicto({ image, libelle, surAppui, enCours, discret }: Props
         alignItems: 'center',
         gap: 4,
         padding: 8,
-        height: 132,
+        // minHeight et non height : dans une colonne flex à hauteur fixe, le
+        // libellé se fait comprimer et se coupe en silence (« sac à » pour
+        // « sac à dos »). La vignette s'étire, elle ne rogne pas.
+        minHeight: 132,
         opacity: discret ? 0.55 : 1,
       }}
       title={libelle}
@@ -34,6 +37,7 @@ export function TuilePicto({ image, libelle, surAppui, enCours, discret }: Props
         style={{
           width: 72,
           height: 72,
+          flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -52,11 +56,13 @@ export function TuilePicto({ image, libelle, surAppui, enCours, discret }: Props
           fontSize: 14,
           lineHeight: 1.2,
           textAlign: 'center',
+          flexShrink: 0,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           display: '-webkit-box',
-          WebkitLineClamp: 2,
+          WebkitLineClamp: 3,
           WebkitBoxOrient: 'vertical',
+          overflowWrap: 'anywhere',
         }}
       >
         {libelle}

@@ -46,7 +46,12 @@ button {
   border-radius: var(--rayon);
 }
 
-/* --- Boutons ---------------------------------------------------------- */
+/* --- Boutons -----------------------------------------------------------
+ * Grammaire DatABA : à plat, aucune ombre, un seul accent d'action.
+ * Écart assumé : DatABA trace des bordures de 1 px ; ici les contrôles
+ * tactiles gardent 2 px, la basse vision et l'appui au doigt priment. Le
+ * 1 px reste pour les séparations (barre, cartes).
+ */
 
 .bouton {
   min-height: var(--cible);
@@ -82,6 +87,7 @@ button {
   padding: 0 calc(var(--pas) * 2);
   background: none;
   border: none;
+  border-radius: var(--rayon-petit);
   color: var(--texte-secondaire);
 }
 

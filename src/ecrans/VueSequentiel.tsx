@@ -6,6 +6,7 @@ import {
   decocherEtape,
   lireCochage,
   modifierEtape,
+  reinitialiserCochage,
   reordonnerEtapes,
   sequence as chargerSequence,
   picto as chargerPicto,
@@ -13,6 +14,7 @@ import {
 } from '../db'
 import { EtapeFormModal } from '../composants/EtapeFormModal'
 import { useGlisserDeposer } from '../lib/useGlisserDeposer'
+import { useNomEtape } from '../lib/useNomEtape'
 import { useObjectUrl } from '../lib/useObjectUrl'
 import type { Etape, EtatCochage, Picto, Sequence } from '../types'
 
@@ -24,6 +26,12 @@ function ImagePictoEtape({ pictoId, taille }: { pictoId: string | undefined; tai
   }, [pictoId])
   if (!url) return null
   return <img src={url} alt="" style={{ width: taille, height: taille, objectFit: 'contain' }} />
+}
+
+/** Le nom d'une étape, qui passe à la ligne au lieu d'être rogné. */
+function NomEtape({ etape, style }: { etape: Etape; style?: React.CSSProperties }) {
+  const nom = useNomEtape(etape)
+  return <span style={{ minWidth: 0, overflowWrap: 'anywhere', ...style }}>{nom}</span>
 }
 
 function LigneEtapeEdition({
@@ -60,7 +68,7 @@ function LigneEtapeEdition({
           ⠿
         </span>
         {url && <img src={url} alt="" style={{ width: 40, height: 40, objectFit: 'contain' }} />}
-        <span>{etape.texte ?? '…'}</span>
+        <NomEtape etape={etape} />
       </div>
       <span className="ligne">
         <button type="button" className="bouton" onClick={surModifier}>
@@ -141,6 +149,13 @@ export function VueSequentiel() {
     naviguer(`/profil/${profilId}`)
   }
 
+  /** Un séquentiel fini n'est pas un cul-de-sac : en atelier, on le refait. */
+  async function recommencer() {
+    if (!profilId) return
+    await reinitialiserCochage(profilId, creneauId)
+    await recharger()
+  }
+
   async function validerEtape(donnees: { pictoId?: string; texte?: string }) {
     if (!sequenceId) return
     if (modalEtape && modalEtape !== 'nouvelle') {
@@ -205,14 +220,24 @@ export function VueSequentiel() {
           ✓
         </span>
         <h1 style={{ fontSize: 'var(--titre-etape)' }}>Fini !</h1>
-        <button
-          type="button"
-          className="bouton bouton--accent"
-          style={{ minHeight: 'var(--cible-jeune)', fontSize: 24, padding: '0 32px' }}
-          onClick={retour}
-        >
-          Retour
-        </button>
+        <div className="ligne" style={{ justifyContent: 'center' }}>
+          <button
+            type="button"
+            className="bouton bouton--accent"
+            style={{ minHeight: 'var(--cible-jeune)', fontSize: 24, padding: '0 32px' }}
+            onClick={() => void recommencer()}
+          >
+            Recommencer
+          </button>
+          <button
+            type="button"
+            className="bouton"
+            style={{ minHeight: 'var(--cible-jeune)', fontSize: 24, padding: '0 32px' }}
+            onClick={retour}
+          >
+            Retour
+          </button>
+        </div>
       </div>
     )
   }
@@ -243,11 +268,15 @@ export function VueSequentiel() {
           }}
         >
           <ImagePictoEtape pictoId={etapeCourante.pictoId} taille={220} />
-          {etapeCourante.texte && (
-            <p style={{ fontSize: 'var(--titre-etape)', fontWeight: 700, textAlign: 'center', margin: 0 }}>
-              {etapeCourante.texte}
-            </p>
-          )}
+          <NomEtape
+            etape={etapeCourante}
+            style={{
+              fontSize: 'var(--titre-etape)',
+              fontWeight: 700,
+              textAlign: 'center',
+              maxWidth: '40rem',
+            }}
+          />
           <button
             type="button"
             className="bouton bouton--accent"
@@ -307,7 +336,10 @@ export function VueSequentiel() {
                 {faite ? '✓' : ''}
               </span>
               <ImagePictoEtape pictoId={etape.pictoId} taille={56} />
-              <span style={{ fontSize: 22, fontWeight: enCours ? 700 : 400 }}>{etape.texte}</span>
+              <NomEtape
+                etape={etape}
+                style={{ fontSize: 22, fontWeight: enCours ? 700 : 400, textAlign: 'left' }}
+              />
             </button>
           )
         })}

@@ -22,6 +22,17 @@ export function EtapeFormModal({ etapeInitiale, surValidation, surFermeture }: P
     if (pictoId) void chargerPicto(pictoId).then((p) => setPictoChoisi(p ?? null))
   }, [pictoId])
 
+  /**
+   * Un picto choisi donne un point de départ au nom, jamais un verrou : le
+   * picto ARASAAC dit « biscuit », l'éducateur écrit « gâteau ». On ne
+   * remplit que si le champ est vide, pour ne jamais écraser ce qui est tapé.
+   */
+  function retenirPicto(p: Picto) {
+    setPictoId(p.id)
+    setPictoChoisi(p)
+    setTexte((actuel) => (actuel.trim() ? actuel : p.libelleAffiche))
+  }
+
   const valide = Boolean(pictoId) || texte.trim().length > 0
 
   return (
@@ -45,7 +56,7 @@ export function EtapeFormModal({ etapeInitiale, surValidation, surFermeture }: P
         style={{
           background: 'var(--surface)',
           border: '2px solid var(--bordure-forte)',
-          borderRadius: 'var(--rayon)',
+          borderRadius: 'var(--rayon-grand)',
           padding: 'calc(var(--pas) * 3)',
           maxWidth: '26rem',
           width: '100%',
@@ -54,7 +65,7 @@ export function EtapeFormModal({ etapeInitiale, surValidation, surFermeture }: P
         <h2 style={{ fontSize: 22 }}>{etapeInitiale ? "Modifier l'étape" : 'Ajouter une étape'}</h2>
 
         <label className="etiquette" htmlFor="texte-etape">
-          Texte (facultatif si un picto est choisi)
+          Nom de l'étape
         </label>
         <input
           id="texte-etape"
@@ -63,15 +74,11 @@ export function EtapeFormModal({ etapeInitiale, surValidation, surFermeture }: P
           placeholder="Ex. : Ranger la vaisselle"
           onChange={(e) => setTexte(e.target.value)}
         />
+        <p style={{ margin: 0, fontSize: 14, color: 'var(--texte-secondaire)' }}>
+          Le nom peut être différent du picto : picto « biscuit », nom « gâteau ».
+        </p>
 
-        <SuggestionsPicto
-          libelle={texte}
-          pictoRetenuId={pictoId}
-          surChoix={(p) => {
-            setPictoId(p.id)
-            setPictoChoisi(p)
-          }}
-        />
+        <SuggestionsPicto libelle={texte} pictoRetenuId={pictoId} surChoix={retenirPicto} />
 
         <div className="ligne">
           {pictoChoisi ? (
@@ -114,8 +121,7 @@ export function EtapeFormModal({ etapeInitiale, surValidation, surFermeture }: P
         <ChoisirPictoModal
           surFermeture={() => setChoixPictoOuvert(false)}
           surChoix={(p) => {
-            setPictoId(p.id)
-            setPictoChoisi(p)
+            retenirPicto(p)
             setChoixPictoOuvert(false)
           }}
         />

@@ -59,7 +59,7 @@ export function ImporterPhotoModal({ surFermeture, surImportReussi }: Props) {
         style={{
           background: 'var(--surface)',
           border: '2px solid var(--bordure-forte)',
-          borderRadius: 'var(--rayon)',
+          borderRadius: 'var(--rayon-grand)',
           padding: 'calc(var(--pas) * 3)',
           maxWidth: '26rem',
           width: '100%',

@@ -27,10 +27,21 @@ function VignetteGrille({ picto, taille, surAppui }: { picto: Picto; taille: num
         gap: 4,
         height: taille,
         padding: 4,
+        overflow: 'hidden',
       }}
     >
-      {url && <img src={url} alt="" style={{ maxWidth: '75%', maxHeight: '65%' }} />}
-      <span style={{ fontSize: 14, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      {url && <img src={url} alt="" style={{ maxWidth: '75%', maxHeight: '55%', flexShrink: 1 }} />}
+      {/* flexShrink: 0 — sinon la colonne comprime le libellé et coupe sa
+          deuxième ligne sans rien afficher (« sac à » pour « sac à dos »). */}
+      <span
+        style={{
+          fontSize: 14,
+          lineHeight: 1.2,
+          textAlign: 'center',
+          flexShrink: 0,
+          overflowWrap: 'anywhere',
+        }}
+      >
         {picto.libelleAffiche}
       </span>
     </button>

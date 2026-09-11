@@ -5,13 +5,14 @@ import {
   creneauEstFait,
   db,
   lireCochage,
+  listerGroupesRegles,
   listerRegles,
   picto as chargerPicto,
   sequence as chargerSequence,
 } from '../db'
 import { calculerEtats, jourActuel, type EtatCreneau } from '../lib/edt'
 import { useObjectUrl } from '../lib/useObjectUrl'
-import type { Activite, CreneauEDT, Picto, Profil as TypeProfil, Regle } from '../types'
+import type { Activite, CreneauEDT, GroupeRegles, Picto, Profil as TypeProfil, Regle } from '../types'
 import { RegleOverlay } from '../composants/RegleOverlay'
 
 type LigneEDT = { creneau: CreneauEDT; activite: Activite; etat: EtatCreneau }
@@ -65,7 +66,16 @@ function TuileCreneau({ ligne, surAppui }: { ligne: LigneEDT; surAppui: () => vo
       >
         {url && <img src={url} alt="" style={{ maxWidth: '100%', maxHeight: '100%' }} />}
       </span>
-      <span style={{ fontSize: 22, fontWeight: etat === 'en_cours' ? 700 : 400, flex: 1, textAlign: 'left' }}>
+      <span
+        style={{
+          fontSize: 22,
+          fontWeight: etat === 'en_cours' ? 700 : 400,
+          flex: 1,
+          minWidth: 0,
+          overflowWrap: 'anywhere',
+          textAlign: 'left',
+        }}
+      >
         {ligne.activite.nom}
       </span>
       {etat === 'passe' && (
@@ -87,7 +97,8 @@ export function Profil() {
   const [profil, setProfil] = useState<TypeProfil | null | undefined>(undefined)
   const [lignes, setLignes] = useState<LigneEDT[] | null>(null)
   const [reglesJournee, setReglesJournee] = useState<Regle[]>([])
-  const [regleOuverte, setRegleOuverte] = useState<string | null>(null)
+  const [groupesJournee, setGroupesJournee] = useState<GroupeRegles[]>([])
+  const [regleOuverte, setRegleOuverte] = useState<string[] | null>(null)
   const naviguer = useNavigate()
 
   const recharger = useCallback(async () => {
@@ -98,6 +109,8 @@ export function Profil() {
 
     const toutesLesRegles = await listerRegles()
     setReglesJournee(toutesLesRegles.filter((r) => p.reglesJournee.includes(r.id)))
+    const tousLesGroupes = await listerGroupesRegles()
+    setGroupesJournee(tousLesGroupes.filter((g) => (p.groupesJournee ?? []).includes(g.id)))
 
     const jour = jourActuel()
     const creneaux = [...p.edt[jour]].sort((a, b) => a.ordre - b.ordre)
@@ -143,7 +156,7 @@ export function Profil() {
         </Link>
       </div>
 
-      {reglesJournee.length > 0 && (
+      {(reglesJournee.length > 0 || groupesJournee.length > 0) && (
         <div
           className="ligne"
           style={{
@@ -153,13 +166,24 @@ export function Profil() {
             flexWrap: 'wrap',
           }}
         >
+          {groupesJournee.map((g) => (
+            <button
+              key={g.id}
+              type="button"
+              className="bouton"
+              style={{ minHeight: 'var(--cible)', fontSize: 16, fontWeight: 700 }}
+              onClick={() => setRegleOuverte(g.regleIds)}
+            >
+              {g.nom}
+            </button>
+          ))}
           {reglesJournee.map((r) => (
             <button
               key={r.id}
               type="button"
               className="bouton"
               style={{ minHeight: 'var(--cible)', fontSize: 16 }}
-              onClick={() => setRegleOuverte(r.id)}
+              onClick={() => setRegleOuverte([r.id])}
             >
               {r.texte}
             </button>
@@ -184,7 +208,7 @@ export function Profil() {
         )}
       </div>
 
-      {regleOuverte && <RegleOverlay regleId={regleOuverte} surFermeture={() => setRegleOuverte(null)} />}
+      {regleOuverte && <RegleOverlay regleIds={regleOuverte} surFermeture={() => setRegleOuverte(null)} />}
     </div>
   )
 }

@@ -10,10 +10,19 @@ import {
 } from '../db'
 import type { PageTLA, Picto } from '../types'
 import { ChoisirPictoModal } from '../composants/ChoisirPictoModal'
+import { DetailPictoModal } from '../composants/DetailPictoModal'
 import { TuilePicto } from '../composants/TuilePicto'
 import { useGlisserDeposer } from '../lib/useGlisserDeposer'
 
-function VignettePictoPage({ id, surRetrait }: { id: string; surRetrait: () => void }) {
+function VignettePictoPage({
+  id,
+  surRetrait,
+  surRenommer,
+}: {
+  id: string
+  surRetrait: () => void
+  surRenommer: (picto: Picto) => void
+}) {
   const [picto, setPicto] = useState<Picto | null>(null)
   useEffect(() => {
     void chargerPicto(id).then((p) => setPicto(p ?? null))
@@ -24,7 +33,17 @@ function VignettePictoPage({ id, surRetrait }: { id: string; surRetrait: () => v
       className="pile"
       style={{ gap: 4, background: 'var(--surface)', border: '1px solid var(--bordure)', padding: 4 }}
     >
-      <TuilePicto image={picto.image} libelle={picto.libelleAffiche} surAppui={() => {}} />
+      {/* Un appui sur la vignette renomme : dans le TLA, le mot affiché et
+          prononcé est celui du picto, il doit se corriger sur place. */}
+      <TuilePicto image={picto.image} libelle={picto.libelleAffiche} surAppui={() => surRenommer(picto)} />
+      <button
+        type="button"
+        className="bouton"
+        onClick={() => surRenommer(picto)}
+        style={{ minHeight: 'var(--cible)', fontSize: 14 }}
+      >
+        Renommer
+      </button>
       <button
         type="button"
         className="bouton bouton--danger"
@@ -43,6 +62,10 @@ export function EditeurPageTLA() {
   const [page, setPage] = useState<PageTLA | null | undefined>(undefined)
   const [nom, setNom] = useState('')
   const [choixOuvert, setChoixOuvert] = useState(false)
+  const [aRenommer, setARenommer] = useState<Picto | null>(null)
+  /** Remonte les vignettes après un renommage : leur id ne change pas, mais
+   *  leur libellé, si. */
+  const [versionPictos, setVersionPictos] = useState(0)
 
   const recharger = useCallback(async () => {
     if (!pageId) return
@@ -105,7 +128,9 @@ export function EditeurPageTLA() {
           {liste.map((item) => (
             <div key={item.id} {...poignee(item.id)}>
               <VignettePictoPage
+                key={`${item.id}-${versionPictos}`}
                 id={item.id}
+                surRenommer={setARenommer}
                 surRetrait={() => {
                   if (pageId) void retirerPictoDePage(pageId, item.id).then(recharger)
                 }}
@@ -118,6 +143,18 @@ export function EditeurPageTLA() {
           + Ajouter un picto
         </button>
       </div>
+
+      {aRenommer && (
+        <DetailPictoModal
+          picto={aRenommer}
+          surFermeture={() => setARenommer(null)}
+          surModification={() => {
+            setARenommer(null)
+            setVersionPictos((v) => v + 1)
+            void recharger()
+          }}
+        />
+      )}
 
       {choixOuvert && (
         <ChoisirPictoModal

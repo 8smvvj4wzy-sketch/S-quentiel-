@@ -7,6 +7,7 @@ import {
   type CreneauEDT,
   type Etape,
   type EtatCochage,
+  type GroupeRegles,
   type JourSemaine,
   type PageTLA,
   type Picto,
@@ -30,6 +31,7 @@ class BaseSequentiel extends Dexie {
   sequences!: Table<Sequence, string>
   activites!: Table<Activite, string>
   regles!: Table<Regle, string>
+  groupesRegles!: Table<GroupeRegles, string>
   pagesTLA!: Table<PageTLA, string>
   profils!: Table<Profil, string>
   cochages!: Table<EtatCochage, [string, string]>
@@ -46,6 +48,11 @@ class BaseSequentiel extends Dexie {
       profils: 'id, initiales',
       cochages: '[profilId+creneauId], profilId',
       reglages: 'id',
+    })
+    // v2 : ajout des ensembles de règles. Ajout de table seulement, donc rien
+    // à migrer — les tablettes déjà installées passent en v2 sans rien perdre.
+    this.version(2).stores({
+      groupesRegles: 'id, nom',
     })
   }
 }
@@ -101,6 +108,7 @@ export function profilNeuf(initiales: string): Profil {
     pageTLAnoyau: '',
     pagesTLA: [],
     reglesJournee: [],
+    groupesJournee: [],
     vocal: {
       actif: true,
       auTap: true,
@@ -178,13 +186,15 @@ export async function obtenirPictoCatalogue(entree: EntreeCatalogue): Promise<Pi
   if (!reponse.ok) throw new Error(`Image introuvable pour le picto ${entree.id}`)
   const image = await reponse.blob()
 
+  // Quelques libellés du catalogue traînent une espace en tête (« banquier »).
+  const libelle = entree.libelle.trim()
   const nouveau: Picto = {
     id,
     source: 'arasaac',
     image,
-    libelleAffiche: entree.libelle,
-    libelleParle: entree.libelle,
-    tags: [...new Set([entree.libelle, ...entree.tags])],
+    libelleAffiche: libelle,
+    libelleParle: libelle,
+    tags: [...new Set([libelle, ...entree.tags.map((t) => t.trim())])],
   }
   await db.pictos.add(nouveau)
   return nouveau
@@ -423,6 +433,8 @@ export async function creerActivite(donnees: {
   pictoId: string
   sequenceId?: string
   tlaContexteId?: string
+  regleIds?: string[]
+  groupeRegleIds?: string[]
 }): Promise<Activite> {
   const nouvelle: Activite = {
     id: nouvelId('activite'),
@@ -430,7 +442,8 @@ export async function creerActivite(donnees: {
     pictoId: donnees.pictoId,
     sequenceId: donnees.sequenceId,
     tlaContexteId: donnees.tlaContexteId,
-    regleIds: [],
+    regleIds: donnees.regleIds ?? [],
+    groupeRegleIds: donnees.groupeRegleIds ?? [],
   }
   await db.activites.add(nouvelle)
   return nouvelle
@@ -665,12 +678,61 @@ export async function supprimerRegle(id: string): Promise<void> {
   await db.regles.delete(id)
 }
 
-export async function definirReglesActivite(activiteId: string, regleIds: string[]): Promise<void> {
-  await db.activites.update(activiteId, { regleIds })
+export async function definirReglesActivite(
+  activiteId: string,
+  regleIds: string[],
+  groupeRegleIds: string[] = [],
+): Promise<void> {
+  await db.activites.update(activiteId, { regleIds, groupeRegleIds })
 }
 
-export async function definirReglesJournee(profilId: string, regleIds: string[]): Promise<void> {
-  await db.profils.update(profilId, { reglesJournee: regleIds })
+export async function definirReglesJournee(
+  profilId: string,
+  regleIds: string[],
+  groupesJournee?: string[],
+): Promise<void> {
+  const patch: Partial<Profil> = { reglesJournee: regleIds }
+  if (groupesJournee) patch.groupesJournee = groupesJournee
+  await db.profils.update(profilId, patch)
+}
+
+/* --- Ensembles de règles -------------------------------------------------
+ * Trois règles qui vont ensemble (« mains calmes », « pieds calmes »,
+ * « bouche silencieuse ») se rappellent d'un seul appui, toutes à l'écran.
+ */
+
+export async function listerGroupesRegles(): Promise<GroupeRegles[]> {
+  const groupes = await db.groupesRegles.toArray()
+  return groupes.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
+}
+
+export async function groupeRegles(id: string): Promise<GroupeRegles | undefined> {
+  return db.groupesRegles.get(id)
+}
+
+export async function creerGroupeRegles(nom: string, regleIds: string[]): Promise<GroupeRegles> {
+  const nouveau: GroupeRegles = { id: nouvelId('groupe'), nom: nom.trim(), regleIds }
+  await db.groupesRegles.add(nouveau)
+  return nouveau
+}
+
+export async function modifierGroupeRegles(
+  id: string,
+  patch: Partial<Pick<GroupeRegles, 'nom' | 'regleIds'>>,
+): Promise<void> {
+  await db.groupesRegles.update(id, patch)
+}
+
+export async function supprimerGroupeRegles(id: string): Promise<void> {
+  await db.groupesRegles.delete(id)
+}
+
+/** Les règles d'un ensemble, dans l'ordre de l'ensemble, sans les disparues. */
+export async function reglesDuGroupe(id: string): Promise<Regle[]> {
+  const groupe = await db.groupesRegles.get(id)
+  if (!groupe) return []
+  const regles = await db.regles.bulkGet(groupe.regleIds)
+  return regles.filter((r): r is Regle => Boolean(r))
 }
 
 /* --- Export / import de la configuration --------------------------------
@@ -684,12 +746,14 @@ export async function definirReglesJournee(profilId: string, regleIds: string[])
 type PictoExporte = Omit<Picto, 'image'> & { imageBase64: string }
 
 type ConfigurationExportee = {
-  version: 1
+  /** 1 : avant les ensembles de règles. 2 : avec. */
+  version: 1 | 2
   exporteLe: string
   pictos: PictoExporte[]
   sequences: Sequence[]
   activites: Activite[]
   regles: Regle[]
+  groupesRegles?: GroupeRegles[]
   pagesTLA: PageTLA[]
   profils: Profil[]
 }
@@ -711,38 +775,53 @@ function base64EnBlob(base64: string): Blob {
 }
 
 export async function exporterConfiguration(): Promise<string> {
-  const [pictosBruts, sequences, activites, regles, pagesTLA, profils] = await Promise.all([
-    db.pictos.toArray(),
-    db.sequences.toArray(),
-    db.activites.toArray(),
-    db.regles.toArray(),
-    db.pagesTLA.toArray(),
-    db.profils.toArray(),
-  ])
+  const [pictosBruts, sequences, activites, regles, groupesRegles, pagesTLA, profils] =
+    await Promise.all([
+      db.pictos.toArray(),
+      db.sequences.toArray(),
+      db.activites.toArray(),
+      db.regles.toArray(),
+      db.groupesRegles.toArray(),
+      db.pagesTLA.toArray(),
+      db.profils.toArray(),
+    ])
 
   const pictos: PictoExporte[] = await Promise.all(
     pictosBruts.map(async ({ image, ...reste }) => ({ ...reste, imageBase64: await blobEnBase64(image) })),
   )
 
   const configuration: ConfigurationExportee = {
-    version: 1,
+    version: 2,
     exporteLe: new Date().toISOString(),
     pictos,
     sequences,
     activites,
     regles,
+    groupesRegles,
     pagesTLA,
     profils,
   }
   return JSON.stringify(configuration, null, 1)
 }
 
-export type ResultatImport = { pictos: number; sequences: number; activites: number; regles: number; pagesTLA: number; profils: number }
+export type ResultatImport = {
+  pictos: number
+  sequences: number
+  activites: number
+  regles: number
+  groupesRegles: number
+  pagesTLA: number
+  profils: number
+}
 
 /** Fusionne (bulkPut, par id) sans rien effacer d'existant. */
 export async function importerConfiguration(json: string): Promise<ResultatImport> {
   const donnees = JSON.parse(json) as ConfigurationExportee
-  if (donnees.version !== 1) throw new Error('Format de fichier non reconnu')
+  // Un fichier v1 est encore lisible : il n'a simplement pas d'ensembles.
+  if (donnees.version !== 1 && donnees.version !== 2) {
+    throw new Error('Format de fichier non reconnu')
+  }
+  const groupesRegles = donnees.groupesRegles ?? []
 
   const pictos: Picto[] = donnees.pictos.map(({ imageBase64, ...reste }) => ({
     ...reste,
@@ -751,12 +830,13 @@ export async function importerConfiguration(json: string): Promise<ResultatImpor
 
   await db.transaction(
     'rw',
-    [db.pictos, db.sequences, db.activites, db.regles, db.pagesTLA, db.profils],
+    [db.pictos, db.sequences, db.activites, db.regles, db.groupesRegles, db.pagesTLA, db.profils],
     async () => {
       if (pictos.length) await db.pictos.bulkPut(pictos)
       if (donnees.sequences.length) await db.sequences.bulkPut(donnees.sequences)
       if (donnees.activites.length) await db.activites.bulkPut(donnees.activites)
       if (donnees.regles.length) await db.regles.bulkPut(donnees.regles)
+      if (groupesRegles.length) await db.groupesRegles.bulkPut(groupesRegles)
       if (donnees.pagesTLA.length) await db.pagesTLA.bulkPut(donnees.pagesTLA)
       if (donnees.profils.length) await db.profils.bulkPut(donnees.profils)
     },
@@ -767,6 +847,7 @@ export async function importerConfiguration(json: string): Promise<ResultatImpor
     sequences: donnees.sequences.length,
     activites: donnees.activites.length,
     regles: donnees.regles.length,
+    groupesRegles: groupesRegles.length,
     pagesTLA: donnees.pagesTLA.length,
     profils: donnees.profils.length,
   }

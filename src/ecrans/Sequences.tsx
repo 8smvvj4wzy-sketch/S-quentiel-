@@ -139,7 +139,7 @@ export function Sequences() {
             style={{
               background: 'var(--surface)',
               border: '2px solid var(--bordure-forte)',
-              borderRadius: 'var(--rayon)',
+              borderRadius: 'var(--rayon-grand)',
               padding: 'calc(var(--pas) * 3)',
               maxWidth: '28rem',
             }}

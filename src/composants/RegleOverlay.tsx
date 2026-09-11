@@ -4,34 +4,86 @@ import { useObjectUrl } from '../lib/useObjectUrl'
 import type { Picto, Regle } from '../types'
 
 type Props = {
-  regleId: string
+  /** Une règle seule, ou toutes celles d'un ensemble : elles s'affichent ensemble. */
+  regleIds: string[]
   surFermeture: () => void
 }
 
-/**
- * Affichage plein écran d'une règle (SPEC §4.4). Recouvrement, comme le
- * TLA : l'écran en dessous ne se démonte jamais.
- */
-export function RegleOverlay({ regleId, surFermeture }: Props) {
-  const [regle, setRegle] = useState<Regle | null>(null)
+function CarteRegle({
+  regle,
+  taillePicto,
+  tailleTexte,
+}: {
+  regle: Regle
+  taillePicto: number
+  tailleTexte: string | number
+}) {
   const [picto, setPicto] = useState<Picto | null>(null)
   const url = useObjectUrl(picto?.image)
 
   useEffect(() => {
-    void chargerRegle(regleId).then((r) => setRegle(r ?? null))
-  }, [regleId])
+    if (regle.pictoId) void chargerPicto(regle.pictoId).then((p) => setPicto(p ?? null))
+    else setPicto(null)
+  }, [regle.pictoId])
+
+  return (
+    <div
+      className="pile"
+      style={{ alignItems: 'center', gap: 'var(--pas)', flex: '0 1 auto', minWidth: 0 }}
+    >
+      {url && (
+        <img
+          src={url}
+          alt=""
+          style={{ width: taillePicto, height: taillePicto, objectFit: 'contain', maxWidth: '100%' }}
+        />
+      )}
+      <p
+        style={{
+          fontSize: tailleTexte,
+          fontWeight: 700,
+          textAlign: 'center',
+          margin: 0,
+          maxWidth: '20rem',
+          overflowWrap: 'anywhere',
+        }}
+      >
+        {regle.texte}
+      </p>
+    </div>
+  )
+}
+
+/**
+ * Affichage plein écran d'une règle, ou d'un ensemble de règles (SPEC §4.4).
+ * Recouvrement, comme le TLA : l'écran en dessous ne se démonte jamais. Les
+ * règles d'un ensemble tiennent sur le même écran — « mains calmes », « pieds
+ * calmes », « bouche silencieuse » se lisent d'un seul regard, sans défiler.
+ */
+export function RegleOverlay({ regleIds, surFermeture }: Props) {
+  const [regles, setRegles] = useState<Regle[]>([])
+  const cle = regleIds.join(',')
 
   useEffect(() => {
-    if (regle?.pictoId) void chargerPicto(regle.pictoId).then((p) => setPicto(p ?? null))
-  }, [regle])
+    let annule = false
+    void Promise.all(cle ? cle.split(',').map((id) => chargerRegle(id)) : []).then((chargees) => {
+      if (!annule) setRegles(chargees.filter((r): r is Regle => Boolean(r)))
+    })
+    return () => {
+      annule = true
+    }
+  }, [cle])
 
-  if (!regle) return null
+  if (regles.length === 0) return null
+
+  const taillePicto = regles.length === 1 ? 220 : regles.length <= 4 ? 160 : 120
+  const tailleTexte = regles.length === 1 ? 'var(--titre-etape)' : regles.length <= 4 ? 24 : 20
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Règle"
+      aria-label={regles.length > 1 ? 'Règles' : 'Règle'}
       style={{
         position: 'fixed',
         inset: 0,
@@ -43,12 +95,22 @@ export function RegleOverlay({ regleId, surFermeture }: Props) {
         justifyContent: 'center',
         gap: 'calc(var(--pas) * 3)',
         padding: 'calc(var(--pas) * 2)',
+        overflowY: 'auto',
       }}
     >
-      {url && <img src={url} alt="" style={{ width: 220, height: 220, objectFit: 'contain' }} />}
-      <p style={{ fontSize: 'var(--titre-etape)', fontWeight: 700, textAlign: 'center', margin: 0, maxWidth: '40rem' }}>
-        {regle.texte}
-      </p>
+      <div
+        className="ligne"
+        style={{
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          gap: 'calc(var(--pas) * 3)',
+          flexWrap: 'wrap',
+        }}
+      >
+        {regles.map((r) => (
+          <CarteRegle key={r.id} regle={r} taillePicto={taillePicto} tailleTexte={tailleTexte} />
+        ))}
+      </div>
       <button
         type="button"
         className="bouton bouton--accent"

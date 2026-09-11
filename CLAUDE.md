@@ -36,14 +36,28 @@ pas de lot, chaque lot doit être déployable et testable sur tablette avant le 
 L'interface ne doit **jamais** concurrencer les pictogrammes. Les pictos portent la
 couleur et l'information ; le châssis reste silencieux.
 
-- Fond : gris très clair neutre `#F2F3F4`. Surfaces : blanc pur.
-- Texte : `#1C1C1E`. Texte secondaire : `#6B6F76`.
-- Un seul accent d'action, bleu profond `#1D4E89` (boutons éducateur, sélection).
-- Statuts : vert `#2E7D4F` pour une étape faite, jaune `#E8A33D` pour l'étape en cours.
-- Pas de dégradés, pas d'ombres portées, pas de cartes arrondies partout. Les bordures
-  et les fonds servent à séparer les zones, pas à décorer.
+La palette et la grammaire de formes viennent du `DESIGN.md` de **DatABA**, l'autre
+application de l'établissement : les deux outils sont utilisés par les mêmes
+éducateurs sur les mêmes tablettes, ils doivent se ressembler. Les valeurs vivent
+dans `src/styles/tokens.css`.
+
+- Fond `#F3F6FB` (paper). Surfaces : blanc pur (card). Bordures `#D7E0EE`,
+  `#A9BAD6` pour les contrôles.
+- Texte `#0E1B33` (ink). Texte secondaire `#52627A` (ink-soft).
+- Un seul accent d'action, bleu `#4566DE` (boutons éducateur, sélection). Jamais
+  décoratif, jamais repris dans les statuts — c'est la règle de l'accent seul.
+- Statuts : vert `#00A870` pour une étape faite, ambre `#FF8A3D` pour l'étape en
+  cours, rouge `#D7263D` pour une action destructive.
+- Rayons croissants selon la taille du bloc : 8 px petits contrôles, 12 px boutons
+  et champs, 16 px cartes et modales.
+- Pas de dégradés, pas d'ombres portées. Les bordures et les fonds servent à séparer
+  les zones, pas à décorer.
+- **Écarts assumés par rapport à DatABA**, pour cause d'accessibilité : bordures de
+  2 px sur les contrôles tactiles (DatABA trace 1 px, gardé ici pour les
+  séparations), cibles 64 / 88 px, et pas de thème sombre.
 - Typographie : **Atkinson Hyperlegible** (police libre conçue pour la basse vision),
-  embarquée en local. Une seule famille. Corps de texte 20 px minimum en mode jeune,
+  embarquée en local. Une seule famille — c'est elle que lisent les jeunes, on ne la
+  remplace pas par les polices de DatABA. Corps de texte 20 px minimum en mode jeune,
   titres d'étape 32 px.
 - Mouvement : uniquement en réponse à une action (une étape cochée, un picto ajouté à
   la phrase). Aucune animation d'apparition décorative.
