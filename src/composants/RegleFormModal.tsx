@@ -24,6 +24,14 @@ export function RegleFormModal({ regleInitiale, surValidation, surFermeture }: P
 
   const valide = texte.trim().length > 0
 
+  /** Le picto amorce le texte de la règle quand il est vide, sans jamais
+   *  écraser ce que l'éducateur a écrit. */
+  function retenirPicto(p: Picto) {
+    setPictoId(p.id)
+    setPictoChoisi(p)
+    setTexte((actuel) => (actuel.trim() ? actuel : p.libelleAffiche))
+  }
+
   async function valider() {
     const donnees = { texte: texte.trim(), pictoId }
     if (regleInitiale) await modifierRegle(regleInitiale.id, donnees)
@@ -52,7 +60,7 @@ export function RegleFormModal({ regleInitiale, surValidation, surFermeture }: P
         style={{
           background: 'var(--surface)',
           border: '2px solid var(--bordure-forte)',
-          borderRadius: 'var(--rayon)',
+          borderRadius: 'var(--rayon-grand)',
           padding: 'calc(var(--pas) * 3)',
           maxWidth: '26rem',
           width: '100%',
@@ -71,14 +79,7 @@ export function RegleFormModal({ regleInitiale, surValidation, surFermeture }: P
           onChange={(e) => setTexte(e.target.value)}
         />
 
-        <SuggestionsPicto
-          libelle={texte}
-          pictoRetenuId={pictoId}
-          surChoix={(p) => {
-            setPictoId(p.id)
-            setPictoChoisi(p)
-          }}
-        />
+        <SuggestionsPicto libelle={texte} pictoRetenuId={pictoId} surChoix={retenirPicto} />
 
         <div className="ligne">
           {pictoChoisi ? (
@@ -109,8 +110,7 @@ export function RegleFormModal({ regleInitiale, surValidation, surFermeture }: P
         <ChoisirPictoModal
           surFermeture={() => setChoixPictoOuvert(false)}
           surChoix={(p) => {
-            setPictoId(p.id)
-            setPictoChoisi(p)
+            retenirPicto(p)
             setChoixPictoOuvert(false)
           }}
         />

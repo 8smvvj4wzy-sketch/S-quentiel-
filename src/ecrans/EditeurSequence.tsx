@@ -29,7 +29,9 @@ function LigneEtape({ etape, poignee }: { etape: Etape; poignee: object }) {
         ⠿
       </span>
       {url && <img src={url} alt="" style={{ width: 40, height: 40, objectFit: 'contain' }} />}
-      <span>{etape.texte ?? picto?.libelleAffiche ?? '…'}</span>
+      <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+        {etape.texte ?? picto?.libelleAffiche ?? '…'}
+      </span>
     </div>
   )
 }

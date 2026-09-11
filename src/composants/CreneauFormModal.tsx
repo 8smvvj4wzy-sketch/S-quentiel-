@@ -3,6 +3,7 @@ import { ajouterCreneau, creerActivite, listerSequences, picto as chargerPicto }
 import type { Activite, JourSemaine, Picto, Sequence } from '../types'
 import { ChoisirActiviteModal } from './ChoisirActiviteModal'
 import { ChoisirPictoModal } from './ChoisirPictoModal'
+import { SelecteurRegles } from './SelecteurRegles'
 import { SuggestionsPicto } from './SuggestionsPicto'
 import { TuilePicto } from './TuilePicto'
 
@@ -27,6 +28,8 @@ export function CreneauFormModal({ profilId, jour, surValidation, surFermeture }
   const [sequenceId, setSequenceId] = useState('')
   const [sequences, setSequences] = useState<Sequence[]>([])
   const [heureDebut, setHeureDebut] = useState('')
+  const [regleIds, setRegleIds] = useState<string[]>([])
+  const [groupeRegleIds, setGroupeRegleIds] = useState<string[]>([])
   const [choixPictoOuvert, setChoixPictoOuvert] = useState(false)
   const [choixActiviteOuvert, setChoixActiviteOuvert] = useState(false)
 
@@ -40,12 +43,22 @@ export function CreneauFormModal({ profilId, jour, surValidation, surFermeture }
 
   const valide = nom.trim().length > 0 && Boolean(pictoId)
 
+  /** Le picto propose un nom, il ne l'impose pas : « biscuit » devient
+   *  « gâteau » d'une correction, sans rien retaper. */
+  function retenirPicto(p: Picto) {
+    setPictoId(p.id)
+    setPictoChoisi(p)
+    setNom((actuel) => (actuel.trim() ? actuel : p.libelleAffiche))
+  }
+
   async function valider() {
     if (!pictoId) return
     const activite = await creerActivite({
       nom: nom.trim(),
       pictoId,
       sequenceId: sequenceId || undefined,
+      regleIds,
+      groupeRegleIds,
     })
     await ajouterCreneau(profilId, jour, activite.id, heureDebut || undefined)
     surValidation()
@@ -77,7 +90,7 @@ export function CreneauFormModal({ profilId, jour, surValidation, surFermeture }
         style={{
           background: 'var(--surface)',
           border: '2px solid var(--bordure-forte)',
-          borderRadius: 'var(--rayon)',
+          borderRadius: 'var(--rayon-grand)',
           padding: 'calc(var(--pas) * 3)',
           maxWidth: '26rem',
           width: '100%',
@@ -98,14 +111,11 @@ export function CreneauFormModal({ profilId, jour, surValidation, surFermeture }
           onChange={(e) => setNom(e.target.value)}
         />
 
-        <SuggestionsPicto
-          libelle={nom}
-          pictoRetenuId={pictoId}
-          surChoix={(p) => {
-            setPictoId(p.id)
-            setPictoChoisi(p)
-          }}
-        />
+        <p style={{ margin: 0, fontSize: 14, color: 'var(--texte-secondaire)' }}>
+          Le nom peut être différent du picto : picto « biscuit », nom « gâteau ».
+        </p>
+
+        <SuggestionsPicto libelle={nom} pictoRetenuId={pictoId} surChoix={retenirPicto} />
 
         <div className="ligne">
           {pictoChoisi ? (
@@ -128,6 +138,16 @@ export function CreneauFormModal({ profilId, jour, surValidation, surFermeture }
             </option>
           ))}
         </select>
+
+        <span className="etiquette">Règles à rappeler pendant l'activité (facultatif)</span>
+        <SelecteurRegles
+          regleIds={regleIds}
+          groupeIds={groupeRegleIds}
+          surChangement={(r, g) => {
+            setRegleIds(r)
+            setGroupeRegleIds(g)
+          }}
+        />
 
         <label className="etiquette" htmlFor="heure-creneau">
           Heure de début (facultatif)
@@ -158,8 +178,7 @@ export function CreneauFormModal({ profilId, jour, surValidation, surFermeture }
         <ChoisirPictoModal
           surFermeture={() => setChoixPictoOuvert(false)}
           surChoix={(p) => {
-            setPictoId(p.id)
-            setPictoChoisi(p)
+            retenirPicto(p)
             setChoixPictoOuvert(false)
           }}
         />

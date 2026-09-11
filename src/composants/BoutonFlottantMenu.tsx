@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { creneauEtActivite, db, listerRegles } from '../db'
+import { creneauEtActivite, db, listerGroupesRegles, listerRegles } from '../db'
 import { creneauDepuisChemin } from '../lib/contexteActivite'
-import type { Regle } from '../types'
+import type { GroupeRegles, Regle } from '../types'
 import { TLAOverlay } from './TLAOverlay'
 import { RegleOverlay } from './RegleOverlay'
 
 type Panneau = 'menu' | 'choix-regle' | 'tla' | null
+
+/** Une entrée du choix : une règle seule ou un ensemble entier. */
+type Rappel = { cle: string; libelle: string; regleIds: string[]; ensemble: boolean }
 
 /**
  * Menu flottant présent sur tous les écrans d'un profil (SPEC §4.5) : accès
@@ -17,8 +20,8 @@ type Panneau = 'menu' | 'choix-regle' | 'tla' | null
 export function BoutonFlottantMenu() {
   const location = useLocation()
   const [panneau, setPanneau] = useState<Panneau>(null)
-  const [reglesDisponibles, setReglesDisponibles] = useState<Regle[]>([])
-  const [regleOuverte, setRegleOuverte] = useState<string | null>(null)
+  const [rappels, setRappels] = useState<Rappel[]>([])
+  const [regleOuverte, setRegleOuverte] = useState<string[] | null>(null)
 
   const profilId = location.pathname.match(/^\/profil\/([^/]+)/)?.[1]
 
@@ -27,14 +30,24 @@ export function BoutonFlottantMenu() {
     async function charger() {
       const profil = await db.profils.get(profilId!)
       if (!profil) return
-      const ids = new Set(profil.reglesJournee)
+      const idsRegles = new Set(profil.reglesJournee)
+      const idsGroupes = new Set(profil.groupesJournee ?? [])
       const creneauId = creneauDepuisChemin(location.pathname, location.search)
       if (creneauId) {
         const r = await creneauEtActivite(profilId!, creneauId)
-        r?.activite.regleIds.forEach((id) => ids.add(id))
+        r?.activite.regleIds.forEach((id) => idsRegles.add(id))
+        r?.activite.groupeRegleIds?.forEach((id) => idsGroupes.add(id))
       }
-      const toutes = await listerRegles()
-      setReglesDisponibles(toutes.filter((r) => ids.has(r.id)))
+      const [toutes, tousLesGroupes] = await Promise.all([listerRegles(), listerGroupesRegles()])
+      // Les ensembles d'abord : c'est le rappel le plus courant en atelier.
+      setRappels([
+        ...tousLesGroupes
+          .filter((g: GroupeRegles) => idsGroupes.has(g.id))
+          .map((g) => ({ cle: g.id, libelle: g.nom, regleIds: g.regleIds, ensemble: true })),
+        ...toutes
+          .filter((r: Regle) => idsRegles.has(r.id))
+          .map((r) => ({ cle: r.id, libelle: r.texte, regleIds: [r.id], ensemble: false })),
+      ])
     }
     void charger()
   }, [profilId, location.pathname, location.search])
@@ -87,7 +100,7 @@ export function BoutonFlottantMenu() {
             style={{
               background: 'var(--surface)',
               border: '2px solid var(--bordure-forte)',
-              borderRadius: 'var(--rayon)',
+              borderRadius: 'var(--rayon-grand)',
               padding: 'calc(var(--pas) * 2)',
               marginBottom: 'calc(var(--cible-jeune) + var(--pas))',
               minWidth: '16rem',
@@ -97,13 +110,13 @@ export function BoutonFlottantMenu() {
             <button type="button" className="bouton bouton--accent" onClick={() => setPanneau('tla')}>
               Tableau de communication
             </button>
-            {reglesDisponibles.length > 0 && (
+            {rappels.length > 0 && (
               <button
                 type="button"
                 className="bouton"
                 onClick={() => {
-                  if (reglesDisponibles.length === 1) {
-                    setRegleOuverte(reglesDisponibles[0].id)
+                  if (rappels.length === 1) {
+                    setRegleOuverte(rappels[0].regleIds)
                     setPanneau(null)
                   } else {
                     setPanneau('choix-regle')
@@ -138,25 +151,30 @@ export function BoutonFlottantMenu() {
             style={{
               background: 'var(--surface)',
               border: '2px solid var(--bordure-forte)',
-              borderRadius: 'var(--rayon)',
+              borderRadius: 'var(--rayon-grand)',
               padding: 'calc(var(--pas) * 3)',
               maxWidth: '24rem',
               width: '100%',
             }}
           >
             <h2 style={{ fontSize: 22 }}>Quelle règle ?</h2>
-            {reglesDisponibles.map((r) => (
+            {rappels.map((rappel) => (
               <button
-                key={r.id}
+                key={rappel.cle}
                 type="button"
                 className="bouton"
-                style={{ width: '100%', justifyContent: 'flex-start' }}
+                style={{
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  fontWeight: rappel.ensemble ? 700 : 400,
+                  overflowWrap: 'anywhere',
+                }}
                 onClick={() => {
-                  setRegleOuverte(r.id)
+                  setRegleOuverte(rappel.regleIds)
                   setPanneau(null)
                 }}
               >
-                {r.texte}
+                {rappel.libelle}
               </button>
             ))}
             <button type="button" className="bouton" onClick={() => setPanneau(null)}>
@@ -167,7 +185,7 @@ export function BoutonFlottantMenu() {
       )}
 
       {panneau === 'tla' && <TLAOverlay profilId={profilId} surFermeture={() => setPanneau(null)} />}
-      {regleOuverte && <RegleOverlay regleId={regleOuverte} surFermeture={() => setRegleOuverte(null)} />}
+      {regleOuverte && <RegleOverlay regleIds={regleOuverte} surFermeture={() => setRegleOuverte(null)} />}
     </>
   )
 }

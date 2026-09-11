@@ -46,7 +46,7 @@ export function ExportImport() {
       const texte = await fichier.text()
       const resultat: ResultatImport = await importerConfiguration(texte)
       setMessage(
-        `Importé : ${resultat.pictos} picto(s), ${resultat.sequences} séquence(s), ${resultat.activites} activité(s), ${resultat.regles} règle(s), ${resultat.pagesTLA} page(s) TLA, ${resultat.profils} profil(s).`,
+        `Importé : ${resultat.pictos} picto(s), ${resultat.sequences} séquence(s), ${resultat.activites} activité(s), ${resultat.regles} règle(s), ${resultat.groupesRegles} ensemble(s) de règles, ${resultat.pagesTLA} page(s) TLA, ${resultat.profils} profil(s).`,
       )
     } catch {
       setErreur("Ce fichier n'a pas pu être importé (format non reconnu).")

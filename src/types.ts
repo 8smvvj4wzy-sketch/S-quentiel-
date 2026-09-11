@@ -57,12 +57,23 @@ export type Regle = {
   texte: string
 }
 
+/**
+ * Plusieurs règles qui vont ensemble — « mains calmes », « pieds calmes »,
+ * « bouche silencieuse » — et qu'on montre d'un bloc, en plein écran.
+ */
+export type GroupeRegles = {
+  id: string
+  nom: string
+  regleIds: string[]
+}
+
 export type Activite = {
   id: string
   nom: string
   pictoId: string
   sequenceId?: string /** facultatif */
   regleIds: string[]
+  groupeRegleIds?: string[]
   tlaContexteId?: string /** page TLA à charger pendant cette activité */
 }
 
@@ -104,6 +115,7 @@ export type Profil = {
   pageTLAnoyau: string /** page de vocabulaire noyau, toujours visible */
   pagesTLA: string[]
   reglesJournee: string[]
+  groupesJournee?: string[]
   vocal: ReglagesVocal
 }
 

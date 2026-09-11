@@ -8,7 +8,7 @@ Quatre supports visuels réunis dans un seul outil, sur tablette :
 |---|---|
 | Emploi du temps | La journée du jeune, activité par activité |
 | Séquentiel | Le découpage d'une activité en étapes à cocher |
-| Rappel de règle | Une consigne affichable, rattachée à une activité ou à la journée |
+| Rappel de règle | Une consigne affichable, seule ou en ensemble, rattachée à une activité ou à la journée |
 | TLA | Tableau de langage assisté : grille de pictos pour communiquer |
 
 Le fil conducteur : depuis l'emploi du temps, on appuie sur l'activité en cours, ce qui
@@ -46,12 +46,19 @@ type Regle = {
   texte: string
 }
 
+type GroupeRegles = {          // lot 10 : des règles qui vont ensemble
+  id: string
+  nom: string                  // « Le calme »
+  regleIds: string[]
+}
+
 type Activite = {
   id: string
   nom: string
   pictoId: string
   sequenceId?: string         // facultatif
   regleIds: string[]
+  groupeRegleIds?: string[]
   tlaContexteId?: string      // page TLA à charger pendant cette activité
 }
 
@@ -76,6 +83,7 @@ type Profil = {
   pageTLAnoyau: string        // page de vocabulaire noyau, toujours visible
   pagesTLA: string[]
   reglesJournee: string[]
+  groupesJournee?: string[]
   vocal: {
     actif: boolean
     auTap: boolean
@@ -139,9 +147,11 @@ Un bouton « Modifier » en barre haute ouvre l'édition de l'EDT du jour, où u
 crée en un seul geste (nom, picto, séquence facultative, heure facultative) — voir §4.6.
 
 ### 4.3 Séquentiel
-Étapes en liste, chacune avec picto et/ou texte. Un appui coche l'étape : coche verte,
-étape suivante mise en avant. Quand toutes les étapes sont faites : écran « Fini » et
-retour à l'accueil du profil.
+Étapes en liste, chacune avec picto et/ou texte. Le texte d'une étape prime toujours sur
+le libellé du picto : on écrit « gâteau » sous un picto qu'ARASAAC appelle « biscuit »,
+parce que c'est le mot que le jeune connaît. Un appui coche l'étape : coche verte,
+étape suivante mise en avant. Quand toutes les étapes sont faites : écran « Fini », avec
+« Recommencer » (on refait souvent la même activité dans la foulée) et « Retour ».
 Option par séquence : affichage « une étape à la fois » (plein écran) pour les jeunes
 qui se perdent dans la liste.
 Un bouton « Modifier » bascule la vue en édition en place (ajouter, modifier, supprimer,
@@ -156,6 +166,12 @@ seul, depuis l'écran Séquentiels, sans passer par l'emploi du temps.
 ### 4.4 Règles
 Affichage plein écran d'une règle, ou bandeau permanent en haut de l'EDT pour les
 règles de journée. Déclenchable par l'éducateur à tout moment depuis le menu flottant.
+
+Les règles peuvent être réunies en **ensembles** (lot 10) : « le calme » = mains
+calmes + pieds calmes + bouche silencieuse. Un ensemble se rappelle d'un seul appui
+et s'affiche d'un bloc, toutes ses règles sur le même écran — ces consignes se
+tiennent, les montrer une par une leur fait perdre leur sens. Un ensemble se coche
+comme une règle, pour une activité comme pour la journée.
 
 ### 4.5 TLA
 Grille configurable de 3×2 à 8×6. Structure :

@@ -80,3 +80,17 @@ réadapter un support pendant un atelier.
 - [x] Créneau créé en un geste depuis l'emploi du temps
 - [x] Séquentiel modifiable pendant qu'il tourne
 - [x] Séquentiel lançable seul, hors emploi du temps
+
+---
+
+Lot 10 : deuxième retour de terrain. Le picto imposait son mot, les libellés
+un peu longs étaient coupés, un séquentiel fini ne se relançait pas, et les
+règles ne se rappelaient qu'une par une.
+
+## Lot 10 — Nommer, afficher, relancer, regrouper
+- [ ] Nom d'étape, d'activité et de règle libre malgré le picto (« gâteau » sur un picto « biscuit »)
+- [ ] Renommage d'un picto depuis une page TLA, sans passer par le paramétrage
+- [ ] Libellés qui ne sont plus rognés dans les vignettes et le TLA
+- [ ] « Recommencer » sur un séquentiel ou un créneau déjà fait
+- [ ] Ensembles de règles, affichés en plein écran d'un seul appui
+- [ ] Direction visuelle alignée sur le DESIGN.md de DatABA

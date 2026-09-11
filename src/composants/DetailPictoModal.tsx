@@ -60,7 +60,7 @@ export function DetailPictoModal({ picto, surFermeture, surModification }: Props
         style={{
           background: 'var(--surface)',
           border: '2px solid var(--bordure-forte)',
-          borderRadius: 'var(--rayon)',
+          borderRadius: 'var(--rayon-grand)',
           padding: 'calc(var(--pas) * 3)',
           maxWidth: '26rem',
           width: '100%',
@@ -111,6 +111,10 @@ export function DetailPictoModal({ picto, surFermeture, surModification }: Props
         <p style={{ margin: 0, fontSize: 14, color: 'var(--texte-secondaire)' }}>
           Ce que la voix prononce peut différer de ce qui est écrit — par exemple afficher
           « toilettes » et faire dire « je veux aller aux toilettes ».
+        </p>
+        <p style={{ margin: 0, fontSize: 14, color: 'var(--texte-secondaire)' }}>
+          Le nouveau nom s'applique partout où ce picto est utilisé. Pour nommer une étape
+          autrement sans toucher au picto, écrire le nom dans l'étape elle-même.
         </p>
 
         {confirmerSuppression ? (

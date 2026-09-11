@@ -5,13 +5,13 @@ import {
   copierCreneauxJour,
   db,
   definirReglesJournee,
-  listerRegles,
   modifierHeureCreneau,
   reordonnerCreneaux,
   supprimerCreneau,
 } from '../db'
-import { JOURS_SEMAINE, type Activite, type CreneauEDT, type JourSemaine, type Profil, type Regle } from '../types'
+import { JOURS_SEMAINE, type Activite, type CreneauEDT, type JourSemaine, type Profil } from '../types'
 import { CreneauFormModal } from '../composants/CreneauFormModal'
+import { SelecteurRegles } from '../composants/SelecteurRegles'
 import { jourActuel } from '../lib/edt'
 import { useGlisserDeposer } from '../lib/useGlisserDeposer'
 
@@ -82,7 +82,6 @@ export function ConstruireEDT() {
   // personne ne regardait.
   const [jour, setJour] = useState<JourSemaine>(jourActuel())
   const [ajoutOuvert, setAjoutOuvert] = useState(false)
-  const [regles, setRegles] = useState<Regle[]>([])
   const [jourSource, setJourSource] = useState<JourSemaine | null>(null)
 
   const recharger = useCallback(async () => {
@@ -93,10 +92,6 @@ export function ConstruireEDT() {
   useEffect(() => {
     void recharger()
   }, [recharger])
-
-  useEffect(() => {
-    void listerRegles().then(setRegles)
-  }, [])
 
   const creneauxJour = profil?.edt[jour] ?? []
 
@@ -141,33 +136,14 @@ export function ConstruireEDT() {
         <p style={{ margin: 0, fontSize: 14, color: 'var(--texte-secondaire)' }}>
           Affichées en bandeau permanent au-dessus de l'emploi du temps du jeune.
         </p>
-        {regles.length === 0 ? (
-          <p style={{ margin: 0, color: 'var(--texte-secondaire)' }}>
-            Aucune règle créée. Aller dans « Bibliothèque de règles ».
-          </p>
-        ) : (
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} className="pile">
-            {regles.map((r) => (
-              <li key={r.id}>
-                <label className="ligne" style={{ cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={profil.reglesJournee.includes(r.id)}
-                    onChange={() => {
-                      if (!profilId) return
-                      const suivantes = profil.reglesJournee.includes(r.id)
-                        ? profil.reglesJournee.filter((id) => id !== r.id)
-                        : [...profil.reglesJournee, r.id]
-                      void definirReglesJournee(profilId, suivantes).then(recharger)
-                    }}
-                    style={{ width: 24, height: 24 }}
-                  />
-                  {r.texte}
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
+        <SelecteurRegles
+          regleIds={profil.reglesJournee}
+          groupeIds={profil.groupesJournee ?? []}
+          surChangement={(r, g) => {
+            if (!profilId) return
+            void definirReglesJournee(profilId, r, g).then(recharger)
+          }}
+        />
 
         <h2 style={{ fontSize: 20 }}>Jour</h2>
         <div className="ligne" style={{ flexWrap: 'wrap' }}>
