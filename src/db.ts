@@ -12,6 +12,7 @@ import {
   type PageTLA,
   type Picto,
   type Profil,
+  type ProtocoleCrise,
   type Regle,
   type ReglagesTablette,
   type Sequence,
@@ -694,6 +695,22 @@ export async function definirReglesJournee(
   const patch: Partial<Profil> = { reglesJournee: regleIds }
   if (groupesJournee) patch.groupesJournee = groupesJournee
   await db.profils.update(profilId, patch)
+}
+
+/**
+ * Protocole crise (lot 11) : quelles règles rappeler et quel séquentiel
+ * ouvrir ensuite, pour ce profil. Fusionne avec l'existant plutôt que de le
+ * remplacer, pour que modifier une seule partie (juste le séquentiel, par
+ * exemple) n'efface pas le reste.
+ */
+export async function definirCriseProfil(
+  profilId: string,
+  patch: Partial<ProtocoleCrise>,
+): Promise<void> {
+  const profil = await db.profils.get(profilId)
+  if (!profil) return
+  const actuel: ProtocoleCrise = profil.crise ?? { regleIds: [], groupeRegleIds: [] }
+  await db.profils.update(profilId, { crise: { ...actuel, ...patch } })
 }
 
 /* --- Ensembles de règles -------------------------------------------------

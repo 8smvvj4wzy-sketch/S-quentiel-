@@ -106,6 +106,18 @@ export type ReglagesVocal = {
   vitesse: number
 }
 
+/**
+ * Protocole crise (lot 11) : un rappel de règles précis, suivi d'un
+ * séquentiel précis. Déclenché par un bouton rouge toujours visible, par le
+ * jeune comme par l'éducateur. Facultatif — sans lui, le bouton ne s'affiche
+ * pas (rien à rappeler).
+ */
+export type ProtocoleCrise = {
+  regleIds: string[]
+  groupeRegleIds: string[]
+  sequenceId?: string /** le séquentiel ouvert après le rappel de règles */
+}
+
 export type Profil = {
   id: string
   /** Initiales ou prénom court. Jamais de nom de famille. */
@@ -117,6 +129,7 @@ export type Profil = {
   reglesJournee: string[]
   groupesJournee?: string[]
   vocal: ReglagesVocal
+  crise?: ProtocoleCrise
 }
 
 export type EtatCochage = {

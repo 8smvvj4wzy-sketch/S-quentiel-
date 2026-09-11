@@ -7,6 +7,9 @@ type Props = {
   /** Une règle seule, ou toutes celles d'un ensemble : elles s'affichent ensemble. */
   regleIds: string[]
   surFermeture: () => void
+  /** « Continuer » depuis le bouton crise, qui enchaîne sur un séquentiel :
+   *  ce n'est pas juste refermer, mais avancer à l'étape suivante. */
+  labelFermeture?: string
 }
 
 function CarteRegle({
@@ -60,7 +63,7 @@ function CarteRegle({
  * règles d'un ensemble tiennent sur le même écran — « mains calmes », « pieds
  * calmes », « bouche silencieuse » se lisent d'un seul regard, sans défiler.
  */
-export function RegleOverlay({ regleIds, surFermeture }: Props) {
+export function RegleOverlay({ regleIds, surFermeture, labelFermeture = 'Fermer' }: Props) {
   const [regles, setRegles] = useState<Regle[]>([])
   const cle = regleIds.join(',')
 
@@ -117,7 +120,7 @@ export function RegleOverlay({ regleIds, surFermeture }: Props) {
         style={{ minHeight: 'var(--cible-jeune)', fontSize: 24, padding: '0 40px' }}
         onClick={surFermeture}
       >
-        Fermer
+        {labelFermeture}
       </button>
     </div>
   )

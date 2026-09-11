@@ -88,9 +88,19 @@ un peu longs étaient coupés, un séquentiel fini ne se relançait pas, et les
 règles ne se rappelaient qu'une par une.
 
 ## Lot 10 — Nommer, afficher, relancer, regrouper
-- [ ] Nom d'étape, d'activité et de règle libre malgré le picto (« gâteau » sur un picto « biscuit »)
-- [ ] Renommage d'un picto depuis une page TLA, sans passer par le paramétrage
-- [ ] Libellés qui ne sont plus rognés dans les vignettes et le TLA
-- [ ] « Recommencer » sur un séquentiel ou un créneau déjà fait
-- [ ] Ensembles de règles, affichés en plein écran d'un seul appui
-- [ ] Direction visuelle alignée sur le DESIGN.md de DatABA
+- [x] Nom d'étape, d'activité et de règle libre malgré le picto (« gâteau » sur un picto « biscuit »)
+- [x] Renommage d'un picto depuis une page TLA, sans passer par le paramétrage
+- [x] Libellés qui ne sont plus rognés dans les vignettes et le TLA
+- [x] « Recommencer » sur un séquentiel ou un créneau déjà fait
+- [x] Ensembles de règles, affichés en plein écran d'un seul appui
+- [x] Direction visuelle alignée sur le DESIGN.md de DatABA
+
+---
+
+Lot 11 : un geste unique pour désamorcer une crise, réclamé pour un usage terrain
+sûr — DatABA a déjà ce réflexe (bouton CRISE toujours accessible).
+
+## Lot 11 — Bouton crise
+- [ ] Bouton rouge en permanence sur les écrans du profil, appui simple
+- [ ] Rappel des règles réglées pour le profil, puis enchaînement sur un séquentiel précis
+- [ ] Réglage du protocole par profil, dans Paramétrage → Crise
