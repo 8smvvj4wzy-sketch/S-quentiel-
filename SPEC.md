@@ -91,6 +91,11 @@ type Profil = {
     voixURI?: string
     vitesse: number           // 0.5 à 1.5
   }
+  crise?: {                   // lot 11 : bouton rouge, réglé une fois par profil
+    regleIds: string[]
+    groupeRegleIds: string[]
+    sequenceId?: string       // séquentiel ouvert après le rappel de règles
+  }
 }
 
 type EtatCochage = {
@@ -172,6 +177,13 @@ calmes + pieds calmes + bouche silencieuse. Un ensemble se rappelle d'un seul ap
 et s'affiche d'un bloc, toutes ses règles sur le même écran — ces consignes se
 tiennent, les montrer une par une leur fait perdre leur sens. Un ensemble se coche
 comme une règle, pour une activité comme pour la journée.
+
+**Bouton crise** (lot 11). Bouton rouge, en permanence sur les quatre écrans du
+profil, utilisable par le jeune comme par l'éducateur — appui simple, sans
+confirmation. Il ouvre le rappel de règles (ou ensembles) réglé pour ce profil, puis
+enchaîne automatiquement sur un séquentiel précis (typiquement un protocole
+d'apaisement). Réglé une fois par profil dans Paramétrage → Crise ; tant que rien
+n'y est choisi, le bouton ne s'affiche pas.
 
 ### 4.5 TLA
 Grille configurable de 3×2 à 8×6. Structure :

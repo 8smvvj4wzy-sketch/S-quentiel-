@@ -132,6 +132,9 @@ export function Parametrage() {
                     <Link to={`/parametrage/profils/${profil.id}/vocal`} className="bouton" style={{ textDecoration: 'none' }}>
                       Voix
                     </Link>
+                    <Link to={`/parametrage/profils/${profil.id}/crise`} className="bouton" style={{ textDecoration: 'none' }}>
+                      Crise
+                    </Link>
                     <button type="button" className="bouton" onClick={() => void renommer(profil)}>
                       Renommer
                     </button>

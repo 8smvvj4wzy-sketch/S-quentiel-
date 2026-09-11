@@ -1,4 +1,5 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BoutonCrise } from './composants/BoutonCrise'
 import { BoutonFlottantMenu } from './composants/BoutonFlottantMenu'
 import { FournisseurVerrouillage, useVerrouillage } from './lib/verrouillage'
 import { Accueil } from './ecrans/Accueil'
@@ -14,6 +15,7 @@ import { ExportImport } from './ecrans/ExportImport'
 import { PagesTLA } from './ecrans/PagesTLA'
 import { Parametrage } from './ecrans/Parametrage'
 import { Profil } from './ecrans/Profil'
+import { ProtocoleCriseFormulaire } from './ecrans/ProtocoleCriseFormulaire'
 import { ReglagesVocaux } from './ecrans/ReglagesVocaux'
 import { Regles } from './ecrans/Regles'
 import { Sequences } from './ecrans/Sequences'
@@ -41,6 +43,7 @@ export default function App() {
     <FournisseurVerrouillage>
       <HashRouter>
         <BoutonFlottantMenu />
+        <BoutonCrise />
         <Routes>
           <Route path="/" element={<Accueil />} />
           <Route path="/a-propos" element={<APropos />} />
@@ -81,6 +84,14 @@ export default function App() {
             element={
               <ReserveParametrage>
                 <ReglagesVocaux />
+              </ReserveParametrage>
+            }
+          />
+          <Route
+            path="/parametrage/profils/:profilId/crise"
+            element={
+              <ReserveParametrage>
+                <ProtocoleCriseFormulaire />
               </ReserveParametrage>
             }
           />
